@@ -1,0 +1,86 @@
+#!/usr/bin/sed -f
+# Sanitize scss files
+#
+# Usage:
+#	scssfix [-i] <file>
+#
+# Author:  Andreas Louv <andreas@louv.dk>
+# Version: 0.6
+
+# Convert every four leading space to tab:
+:start
+
+:stab
+s/^\(\t*\)    /\1\t/; t stab
+
+# Convert block comments to multiply single line comments:
+/^\/\*/ {
+	:scom
+	/\*\//b ecom
+	N
+	b scom
+	:ecom
+
+	s=/\*==
+	s=\*/==
+	s=\(^\|\n\)\(// *\)*=\1// \2=g
+	b
+}
+
+# Convert comment colors
+s/\(color\|background\): *white *;$/\1: #fff;/; t
+s/\(color\|background\): *black *;$/\1: #000;/; t
+s/\(color\|background\): *gr[ae]y;$/\1: #808080;/; t
+
+# Convert border: none
+s/border\(-top\|-right\|-bottom\|-left\): *none *;/border\1: 0;/; t
+
+# Remove px from 0
+s/ 0px\>/ 0/; t
+
+# Add trailing lines between blocks
+:sline
+/}$/ {
+	N
+
+	# Convert every four leading space to tab:
+	:slinet
+	s/\(^\|\n\)\(\t*\)    /\1\2\t/; t slinet
+
+	$b
+	//b sline
+	s/}\n\([[:space:]]*[@&#.*:[:alnum:]]\)/}\n\n\1/
+
+	# Print and remove everything but the last line from the patter space,
+	# effectially leaving us with a "normal" line in the pattern space:
+	h
+	s/\n[^\n]*$//p
+	x
+	s/^.*\n//
+	b start
+}
+
+# Remove empty blocks, and break multiply selectors to each line; a, b => a,\nb
+/{$/ {
+	# Break selectors
+	:scomma
+	s/\(^\|\n\)\([[:space:]]*\)\([^,\n]*,\) *\([^\n]*{\)$/\1\2\3\n\2\4/; t scomma
+
+	# Remove empty blocks
+	:reblock
+	N
+	/{\(\n[[:space:]]*\)*$/b reblock
+	/{\n[[:space:]]*}/d
+
+	# Print and remove everything but the last line from the patter space,
+	# effectially leaving us with a "normal" line in the pattern space:
+	h
+	s/\n[^\n]*$//p
+	x
+	s/^.*\n//
+	b start
+}
+
+# Lowercase hexidecimal colors
+s/#\([[:xdigit:]]\{3\}\)\{1,2\}/\L&/
+s/#\([[:xdigit:]]\)\1\([[:xdigit:]]\)\2\([[:xdigit:]]\)\3/#\1\2\3/

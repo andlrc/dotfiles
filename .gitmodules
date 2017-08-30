@@ -1,0 +1,6 @@
+[submodule "vim/pack/undotree/opt/undotree"]
+	path = vim/pack/undotree/opt/undotree
+	url = https://github.com/mbbill/undotree
+[submodule "vim/pack/rpgle.vim/opt/rpgle.vim"]
+	path = vim/pack/rpgle.vim/opt/rpgle.vim
+	url = https://github.com/andlrc/rpgle.vim

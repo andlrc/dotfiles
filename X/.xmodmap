@@ -1,0 +1,7 @@
+! Remap <CapsLock> so that we can type æøå by pressing <Control>+;'[
+clear lock
+keycode 66 = Mode_switch
+
+keycode 47 = semicolon colon U00E6 U00C6
+keycode 48 = apostrophe quotedbl U00F8 U00D8
+keycode 34 = bracketleft braceleft U00E5 U00C5

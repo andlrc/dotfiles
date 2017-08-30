@@ -1,0 +1,23 @@
+#!/bin/sh
+# Author: Andreas Louv <andreas@louv.dk>
+
+if test "$#" -lt 1
+then
+  >&2 printf "Usage '%s +inc'\n" "${0##*/}"
+  exit 2
+fi
+
+readonly min=20
+readonly max=$(cat /sys/class/backlight/intel_backlight/max_brightness)
+
+inc=$1; shift
+inc=$((inc * max / 100))
+file=/sys/class/backlight/intel_backlight/brightness
+cat "$file"
+current=$(cat "$file")
+next=$((inc + current))
+
+test "$next" -lt "$min" && next="$min"
+test "$next" -gt "$max" && next="$max"
+
+echo "$next" > "$file"

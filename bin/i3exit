@@ -1,0 +1,9 @@
+#!/bin/sh
+
+for pgm in redshift compton dunst xautolock cat-batt cat-cpu-temp; do
+  pgrep "^$pgm\$" | while read pid; do
+    kill "$pid"
+  done
+done
+
+i3-msg exit

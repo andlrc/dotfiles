@@ -1,0 +1,18 @@
+#!/bin/sh
+# Recover Workspaces and move them to the first connected monitor, this is
+# usefull for a laptop, which sometimes uses external monitors.
+#
+# Version: 1.0
+# Usage:
+#	recws
+
+mon=$(xrandr --query |
+  sed -n '/^\([[:alnum:]-][[:alnum:]-]*\) connected.*/{s//\1/p;q}')
+
+# Find workspaces that are not on `$mon', and move them to `$mon'
+i3-msg -t get_workspaces |
+  jq --arg mon "$mon" '.[] | select(.output != $mon) | .name' |
+while read ws
+do
+  i3-msg "workspace $ws; move workspace to $mon"
+done

@@ -1,0 +1,100 @@
+#!/usr/bin/perl -pl
+# Convert IceBreak `var' to 7.1 `dcl-'
+#
+# Usage:
+# 	var2dcl -i <file>
+#
+# Author: Andreas Louv <andreas@louv.dk>
+# Version: 0.1
+
+y/\r//d;
+s/\h*$//;
+
+# Convert var
+if (/^\h*var\b/) {
+  s/^(\h*)var\h+(\H+\h*)ptr\h*;?\h*$/dcl-s  $2 pointer;/i;
+  s/^(\h*)var\h+(\H+\h*)bool\h*;?\h*$/dcl-s  $2 ind;/i;
+  s/^(\h*)var\h+(\H+\h*(?:varchar|char|int|dec)[^;]*);?\h*$/dcl-s  $2;/i;
+  s/^(\h*)var\h+(\H+\h*likeds[^;]*);?\h*$/dcl-s  $2;/i;
+  s/^(\h*)var\h+(\H+\h*extname[^;]*);?\h*$/dcl-s  $2 end-ds;/i;
+}
+
+# Convert const
+elsif (m{ (?= ^ d [\w\h]{17} c \h{19} .{1,37} )
+  ^ d \h* (?<identifier>\w+) \h* c \h{19} (?<keywords> .{1,37} )
+}xi) {
+  my ($identifier, $keywords) = ($+{identifier}, $+{keywords});
+  $keywords =~ s/\s*$//;
+  $_ = "dcl-c  $identifier $keywords;" unless $keywords =~ /[+.-]$/;
+}
+
+# Convert pointer
+elsif (m{ (?= ^ d [\w\h]{17} s \h{15} [*] )
+  ^ d \h* (?<identifier>\w+) \h* s \h{15} [*] (?: \h{3} (?<keywords> .{1,37} ) )?
+}xi) {
+  my ($identifier, $keywords) = ($+{identifier}, $+{keywords});
+
+  $_ = "dcl-s  $identifier pointer;";
+  $keywords =~ s/\s*$//;
+  s/;$/ $keywords;/ if $keywords;
+}
+
+# Convert date
+elsif (m{ (?= ^ d [\w\h]{17} s \h{15} d )
+  ^ d \h* (?<identifier>\w+) \h* s \h{15} d (?: \h{3} (?<keywords> .{1,37} ) )?
+}xi) {
+  my ($identifier, $keywords) = ($+{identifier}, $+{keywords});
+
+  $_ = "dcl-s  $identifier date(*iso);";
+  $keywords =~ s/\s*$//;
+  s/;$/ $keywords;/ if $keywords;
+}
+
+# Convert boolean
+elsif (m{ (?= ^ d [\w\h]{17} s \h{15} n )
+  ^ d \h* (?<identifier>\w+) \h* s \h{15} n (?: \h{3} (?<keywords> .{1,37} ) )?
+}xi) {
+  my ($identifier, $keywords) = ($+{identifier}, $+{keywords});
+
+  $_ = "dcl-s  $identifier ind;";
+  $keywords =~ s/\s*$//;
+  s/;$/ $keywords;/ if $keywords;
+}
+
+# Convert interger
+elsif (m{ (?= ^ d [\w\h]{17} s \h{10} [\d\h]{5} i )
+  ^ d \h* (?<identifier>\w+) \h* s \h{10} \h* (?<length>\d+) i (?: \h [0\h] \h (?<keywords> .{1,37} ) )?
+}xi) {
+  my ($identifier, $length, $keywords) = ($+{identifier}, $+{length}, $+{keywords});
+
+  $_ = "dcl-s  $identifier int($length);";
+  $keywords =~ s/\s*$//;
+  s/;$/ $keywords;/ if $keywords;
+}
+
+# Convert DS ... likeds(...)
+elsif (m{ (?= ^ d [\w\h]{17} ds \h{18} .* likeds\([^)]*\) )
+  ^ d \h* (?<identifier>\w+) \h* ds \h{18} (?: (?<keywords> .{1,37} ) )
+}xi) {
+  my ($identifier, $keywords) = ($+{identifier}, $+{keywords});
+
+  $keywords =~ s/\s*$//;
+  $_ = "dcl-ds $identifier $keywords;";
+}
+
+
+# Convert varying -> varchar
+elsif (m{ (?= ^ d [\w\h]{17} s \h{10} [\d\h]{5} (?: [a\h] | $) )
+  ^ d \h* (?<identifier>\w+) \h* s \h{10} \h* (?<length>\d+) (?: [a\h] | $) \h* (?<keywords> .{1,37} )?
+}xi) {
+  my ($identifier, $length, $keywords) = ($+{identifier}, $+{length}, $+{keywords});
+
+  my $type = 'char';
+  $keywords =~ s/\s*$//;
+  if ($keywords =~ s/\bvarying\b//) {
+    $type = 'varchar';
+  }
+
+  $_ = "dcl-s  $identifier $type($length);";
+  s/;$/ $keywords;/ if $keywords;
+}

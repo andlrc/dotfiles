@@ -1,0 +1,30 @@
+#!/bin/sh
+# Extract todo's from code.
+# Doesn't work for multi line comments, i.e. ansi C's /* ... */
+# Usage:
+#	todof [<file>...]
+# If file is omitted the current directory will be searched recursively
+#
+# Author: Andreas Louv <andreas@louv.dk>
+# Version: 1.1
+
+todo='(TODO|FIXME)' # Todo Regex
+comm='(//|#)'       # Comment regex
+
+if test $# -eq 0
+then
+  exec find . \
+    -path '*/node_modules' -prune \
+    -o -path '*/.git' -prune \
+    -o -type f -exec "$0" {} +
+fi
+
+awk \
+  -v todo="$todo" \
+  -v comm="$comm" \
+  'o && $1 !~ comm {o = 0}
+  $0 ~ todo { o = 1 }
+  o {
+    gsub("^[[:space:]]*"c"[[:space:]]*", "");
+    printf("%s:%d %s\n", FILENAME, FNR, $0);
+  }' "$@"

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Remove undo files which original file is deleted
+# Usage:
+#	vimuncl
+
+cd ~/.vim/tmp/undo/
+for undo_file in *
+do
+  test -e "$undo_file" || continue
+  real_file=$(echo "$undo_file" | sed 's:%:/:g')
+  test -e "$real_file" || rm -- "$undo_file"
+done

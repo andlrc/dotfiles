@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# Usage:
+#	genrpglectags <project>
+#
+# Author: Andreas Louv <andreas@louv.dk>
+
+pgm=${0##*/}
+version=0.4
+usage='{ -h | -V | { -p project | -c } [ -d ] }'
+
+project=""
+dry_run=""
+
+shopt -s nullglob
+
+while getopts "hVdcp:" opt
+do
+	case $opt in
+		h)
+			cat << HELP
+Usage $pgm $usage
+
+  -c         Search CWD for project
+  -p project Specify project
+
+  -V         Show version information
+  -h         Show this help and exit
+HELP
+			exit 0
+			;;
+		V)
+			printf "%s %s\n" "$pgm" "$version"
+			exit 0
+			;;
+		c)
+			project=$(pwd |
+			sed 's=^.*/\([^/]*\)/[^/]*/services.*=\1=p;d')
+			;;
+		d)
+			dry_run=1
+			;;
+		p)
+			project=$OPTARG
+			;;
+		:)
+
+			>&2 printf '%s: expected argument for  option -%s\n' \
+			           "$opt"
+			exit 1
+			;;
+		\?)
+			>&2 printf '%s: unknown option -%s\n' "$OPTARG"
+			exit 1
+			;;
+	esac
+done
+
+if test -z "$project"
+then
+	>&2 printf 'Usage: %s %s\n' "$pgm" "$usage"
+	exit 1
+fi
+
+portfolio_dir=/mnt/dksrv206/www/Portfolio/Admin/Services
+bas_dir=/mnt/dksrv206/www/dev/bas/shared/services
+project_dir=/mnt/dksrv206/www/dev/$project/customized/services
+
+args=(
+  "$portfolio_dir"/[!_]*[!_].as[pm]x
+  "$bas_dir"/[!_]*[!_].as[pm]x
+  "$bas_dir/qrpghdr"/*.rpgleinc
+
+  "$portfolio_dir"/[!_]*[!_].rpgle
+  "$bas_dir"/[!_]*[!_].rpgle
+  ~/.cache/rpgledev/*.file/*.rpgleinc
+)
+
+if test "$project" != "bas"; then
+  args+=("$project_dir"/[!_]*[!_].as[pm]x)
+  args+=("$project_dir"/[!_]*[!_].rpgle)
+fi
+
+if test -n "$dry_run"
+then
+	printf '%s\n' "${args[@]}"
+else
+	>&2 printf "Generating tags for '%s'\n" "$project"
+
+	if ! test -e tags
+	then
+		>&2 printf "Generate all tags\n" "$project"
+		rpglectags "${args[@]}"
+	else
+		tags_stat=$(stat -c %Y tags)
+		modified=()
+		>&2 printf "Partial generation, 'stat tags' = %d\n" \
+		           "$tags_stat"
+		for file in "${args[@]}"
+		do
+			file_stat=$(stat -c %Y "$file")
+			if test "$file_stat" -gt "$tags_stat"
+			then
+				modified+=("$file")
+				>&2 printf "%s is modified\n" "$file"
+			fi
+		done
+
+		tagstmp=$(mktemp)
+		moditmp=$(mktemp)
+		if test "${modified[0]}"
+		then
+			printf "%s\n" "${modified[@]}" > "$moditmp"
+			awk -F'\t' \
+			    'FILENAME != "tags" { modified[$0]++; next }
+			     !modified[$2]' \
+			     "$moditmp" tags > "$tagstmp"
+			mv "$tagstmp" tags
+			rm "$moditmp"
+
+			rpglectags -a "${modified[$@]}"
+		fi
+	fi
+fi

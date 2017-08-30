@@ -1,0 +1,212 @@
+" vim: fdm=marker fmr={{{,}}} fdl=0
+" Author Andreas Louv <andreas@louv.dk>
+" This is my personal vim configuration.
+" Use at own risk, NO WARRANTY, to the extent permitted by law.
+
+" Plugins {{{
+
+packadd! rpgle.vim
+packadd! undotree
+packadd! matchit
+
+
+" }}}
+" Options {{{
+
+filetype plugin indent on
+syntax on
+set synmaxcol=200
+
+set title
+set hidden
+set backspace=indent,eol,start
+set history=1000
+set undofile undoreload=10000
+set dir=~/.vim/tmp/swap//
+set list showbreak=↪ listchars=tab:¦\ ,eol:¬,extends:❯,precedes:❮
+set matchtime=0
+set shell=/bin/bash
+set nrformats-=octal
+set visualbell belloff=wildmode
+
+" }}}
+" Leader {{{
+
+let mapleader = "\<Space>"
+let maplocalleader = "\\"
+
+" }}}
+" Searching and Navigating Files {{{
+
+setglobal ignorecase smartcase hlsearch
+setglobal path=**
+setglobal grepprg=grep\ -nH\ --exclude='*.o'\ --exclude='*.tags'
+         \\ --exclude='tags'\ --exclude-dir=node_modules
+         \\ --exclude-dir=.git\ $*
+
+nnoremap <leader>g :grep<space>
+nnoremap <leader>f :g//#<left><left>
+nnoremap gb :ls<cr>:b<space>
+
+" Power <CR> {{{
+
+cnoremap <expr> <CR> getcmdline() =~# '^[vg]/.*/#$'
+  \ ? '<CR>:call PromptAndExec(":%d\r")<CR>' : '<CR>'
+
+" }}}
+" Prompt And Exec Function {{{
+
+function! PromptAndExec(cmd)
+  let ans = input('Type number and <Enter> (empty cancels): ')
+
+  try
+    silent execute 'normal! ' . printf(a:cmd, ans)
+  catch /E387/ "E387: Match is on current line
+  endtry
+endfunction
+
+" }}}
+" Faster define and include {{{
+
+nnoremap [I [I:call PromptAndExec(":ijump! %d \022\027\015")<CR>
+nnoremap ]I ]I:call PromptAndExec(":+1,$ijump! %d \022\027\015")<CR>
+
+nnoremap [D [D:call PromptAndExec(":djump %d \022\027\015")<CR>
+nnoremap ]D ]D:call PromptAndExec(":+1,$djump %d \022\027\015")<CR>
+
+" }}}
+
+" }}}
+" Spelling {{{
+
+set spellfile=~/.vim/spell.utf-8.add
+
+" zg will add <cword> to the custom spell file, sort that file after adding
+nnoremap zg zg:silent ! sort ~/.vim/spell.utf-8.add -o
+  \ ~/.vim/spell.utf-8.add<cr>:redraw!<cr>
+
+" }}}
+" Enable automatic make on write {{{
+
+command! -bang AutoMake call <SID>AutoMakeSetup('<bang>' == '!' ? 1 : 0)
+
+function! s:AutoMakeSetup(unset)
+  augroup AutoMake
+    au!
+    if a:unset == 0
+      au BufWritePost <buffer> call AutoMake()
+    endif
+  augroup END
+endfunction
+
+function! AutoMake()
+  silent make!
+  silent redraw!
+  try
+    cc
+  catch /E42/
+  endtry
+endfunction
+
+" }}}
+" Trailing whitespace {{{
+
+" Clean trailing whitespace
+nnoremap <silent> <leader>ww mz:keepp %s/\\\@<!\s\+$//e<cr>`z
+
+" Only shown when not in insert mode
+augroup ShowTrail
+  au!
+  au InsertEnter * :set listchars-=trail:⌴
+  au InsertLeave * :set listchars+=trail:⌴
+  set listchars+=trail:⌴
+augroup END
+
+" }}}
+" Completion {{{
+
+set wildmenu
+set wildmode=longest,full
+set wildignorecase
+set wildignore+=.git,*.o
+
+" set completeopt+=menu,menuone
+
+" }}}
+" Wrapping {{{
+
+setglobal nowrap
+setglobal textwidth=80
+set formatoptions+=jo
+set formatoptions-=t
+
+" }}}
+" Backups {{{
+
+set undodir=~/.vim/tmp/undo//
+
+" }}}
+" Abbreviations {{{
+
+inorea <al@ <andreas@louv.dk
+inorea al@ andreas@louv.dk
+
+" }}}
+" Convenience mappings {{{
+
+nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
+
+" Toggle colorcolumn
+nnoremap <silent> <leader>cc
+       \ :let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''<CR>
+
+nnoremap <silent> <leader>ss
+       \ :echo synIDattr(synID(line('.'), col('.'), 0), 'name')<CR>
+
+" }}}
+" Folding {{{
+
+setglobal foldlevelstart=10
+
+" Automatic set foldmethod to manual when entering insert mode, this is done to
+" prevent vim from unfolding automatic folds, when the code changes.
+augroup LazyFolds
+  au!
+  au InsertEnter,WinLeave * :call <SID>LazyFolds(0)
+  au InsertLeave,WinEnter * :call <SID>LazyFolds(1)
+augroup END
+
+
+function! s:LazyFolds(type)
+  if a:type == 0
+    let b:lazy_foldmethod=&foldmethod
+    setlocal foldmethod=manual
+  elseif exists('b:lazy_foldmethod')
+    execute 'setlocal foldmethod=' . b:lazy_foldmethod
+  endif
+endfunction
+
+" }}}
+" Color Fixes {{{
+
+highlight Folded term=standout ctermfg=7 ctermbg=0
+highlight! link Conceal PreProc
+
+" }}}
+" FileType Detect {{{
+
+augroup FT_Detect
+  au!
+  au BufNewFile,BufRead *.widget setlocal filetype=javascript.widget
+  au BufNewFile,BufRead *.xjson,*.xpd,*.ns,*.dmd,*.lib setlocal filetype=json
+  au BufNewFile,BufRead *.tpl setlocal filetype=html syntax=html
+  au BufNewFile,BufRead *.aspx,*.asmx setlocal filetype=rpgle
+  au BufNewFile,BufRead *.qdmd setlocal filetype=qdmd
+augroup END
+
+" }}}
+" UndotreeToggle {{{
+
+let g:undotree_SetFocusWhenToggle = 1
+
+" }}}

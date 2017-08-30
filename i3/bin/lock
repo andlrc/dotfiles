@@ -1,0 +1,21 @@
+#!/bin/sh
+
+lock() {
+  i3lock -c "000000" -fe
+  sleep 60
+  if pgrep i3lock > /dev/null; then
+    xset dpms force off
+  fi
+}
+
+if test "$#" -gt 0; then
+  xset dpms force off
+  sleep 5
+  # If screen if still off then continue locking
+  if xset -q | sed -n '${/[oO]ff/q;q1}'; then
+    lock
+  fi
+else
+  lock
+fi
+

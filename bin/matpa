@@ -1,0 +1,29 @@
+#!/bin/bash
+# Usage:
+# 	./matpa pid pattern
+#
+
+pid=$BASHPID
+
+if [ $# -ne 2 ]
+then
+  >&2 printf "Usage: %s [pid] [pattern]\n" "${0##*/}"
+  exit 1
+fi
+
+ppid=$1; shift
+pattern=$1; shift
+
+while :
+do
+	ppid=$(ps -o pid,ppid,cmd |
+	awk -v our="$pid" -v p="$ppid" '$1 != our && $2 == p { print $1; exit }')
+	[ -z "$ppid" ] && break
+	if ps -o cmd -p "$ppid" | grep -q "$pattern"
+	then
+		echo "$ppid"
+		exit 0
+	fi
+done
+
+exit 1

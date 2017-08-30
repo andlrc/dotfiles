@@ -1,0 +1,59 @@
+#!/bin/bash
+out_dir=${XDG_CACHE_HOME:-~/.cache/rpgledev}
+mkdir -p "$out_dir"
+
+put_head()
+{
+	colred=$(tput setaf 9) # Red
+	colres=$(tput sgr0) # Reset
+	>&2 printf "${colred}Line width for '%s' is '%d'${colres}\n" \
+		   "$out_name" "$lwidth"
+}
+
+for mbr_file in /mnt/dksrv206/QSYS.LIB/{ICEBREAK,PORTFOLIO,*DEV}.LIB/{QASPHDR,QRPGLESRC}.FILE/*.MBR
+do
+	test -e "$mbr_file" || continue
+	out_name="$(echo "$mbr_file" |
+		sed 's:^.*/\([^/]*/[^/]*\)$:\1:;s:\.MBR$:.rpgleinc:' |
+		awk '{ print tolower($0); }')"
+	out_file="$out_dir/$out_name"
+
+	# Don't fetch non changed file
+	if test -e "$out_file" &&
+	   test "$(stat -c %Y "$mbr_file")" -lt "$(stat -c %Y "$out_file")"
+	then
+		>&2 printf "Already fetched '%s'\n" "$out_name"
+		continue
+	fi
+
+	# NOTE: The data is in EBCDIC and in some fixed width.  Hopefully there
+	# is an an include guard:
+	# /if not defined(NAME)
+	# /define NAME
+	#
+	# This means we can calculate the length between ``if not ...'' and all
+	# the way until ``/define ...''
+	lwidth=$((6 + $(awk 'NR == 2 { print; exit(0); }' \
+			    RS='@@@@@@a' \
+			    "$mbr_file" |
+			wc -c)))
+	if test "$lwidth" -ne "120"
+	then
+		lwidth=228
+	fi
+
+	put_head "$out_name" "$lwidth"
+
+	mkdir -p "${out_file%/*}"
+
+	dd if="$mbr_file" \
+	   of="$out_file" \
+	   bs="$lwidth"   \
+	   cbs="$lwidth"  \
+	   conv=ascii,lcase 2> /dev/null
+
+	printf "      * Original file: '%s'\n" "$mbr_file" >> "$out_file"
+
+	# Show top of file to give a human a change to see the width
+	>&2 head -5 "$out_file"
+done

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+ans=$(awk '{ print $1 }' ~/.telnetter |
+	dmenu -i -p "Which emulator to start?")
+
+ip=$(awk -v a="$ans" '$1 == a { print $2 }' ~/.telnetter)
+
+termite --class "telnetter" -e "gs '${ip:-$ans}'"

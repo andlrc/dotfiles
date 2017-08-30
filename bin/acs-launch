@@ -1,0 +1,13 @@
+#!/bin/sh
+
+session_dir="$HOME/IBM/iAccessClient/Emulator"
+opts=$(printf "NEW\n%s" "$(find "$session_dir" -type f -name "*.hod" -print \
+	| sed 's~.*/\(.*\)\..*~\U\1~')" | sort)
+
+ans="$(printf "%s" "$opts" | dmenu -i -p "Which emulator to start?")"
+
+if test -f "$session_dir/$ans.hod"; then
+	acs "$session_dir/$ans.hod"
+elif test "$ans" = "NEW"; then
+	acs sm
+fi

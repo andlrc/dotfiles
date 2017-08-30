@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+# Author: Andreas Louv <andreas@louv.dk>
+
+use strict;
+use warnings;
+use 5.010;
+use Getopt::Long qw(:config no_ignore_case);
+use File::Basename;
+
+my $PGM = basename($0);
+
+my $direction = "";
+my $mirror = 1;
+GetOptions(
+	"direction=s" => sub {
+		shift;
+		$direction = shift;
+		$mirror = 0;
+	}
+) or say("Usage: $PGM [--direction left|right]") and exit(1);
+
+my $prev_device;
+open my $fh, "-|", "xrandr" or die $!;
+while (<$fh>) {
+	if (/(.*?)\sconnected\s/) {
+		my $device = $1;
+
+		if (defined $prev_device) {
+			if ($mirror) {
+				qx/ xrandr -d :0.0 --output $device --auto --same-as $prev_device /;
+			}
+			else {
+				qx/ xrandr -d :0.0 --output $device --auto /;
+				qx/ xrandr -d :0.0 --output $prev_device --$direction-of $device /;
+			}
+		}
+		else {
+			qx/ xrandr -d :0.0 --output $device --auto /;
+		}
+		$prev_device = $device;
+	}
+}

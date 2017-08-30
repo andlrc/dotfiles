@@ -1,0 +1,10 @@
+#!/bin/sh
+# Two monitor setup
+# Usage:
+#	mon2
+#
+# Author: Andreas Louv <andreas@louv.dk>
+# Version: 0.1
+
+xrandr --output DVI-D-0 --mode 1920x1080 --rate 144 &&
+  xrandr --output DVI-I-0 --auto --right-of DVI-D-0

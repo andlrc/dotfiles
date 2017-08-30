@@ -1,0 +1,26 @@
+#!/bin/sh
+# This script will concatenate the output from two batteries
+# so that it can be used by 'i3status'
+# Usage:
+#
+# battery 0 {
+#   format = "%status %percentage %remaining"
+#   format_down = "No battery"
+#   path = "/tmp/cat-batt.uevent"
+#   low_threshold = 10
+# }
+
+readonly out="/tmp/cat-batt.uevent"
+readonly bat0="/sys/class/power_supply/BAT0/uevent"
+readonly bat1="/sys/class/power_supply/BAT1/uevent"
+
+while :; do
+	(if test -f "$bat1"; then
+		paste -d '=' "$bat0" "$bat1" | \
+			awk -F '=' '/Charging/{ print($1 "=Charging"); next } { print($1 "=" ($2+$4)/2) }'
+	else
+		cat "$bat0"
+	fi) > "$out"
+	
+	sleep 10
+done

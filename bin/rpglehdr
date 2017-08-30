@@ -1,0 +1,140 @@
+#!/usr/bin/env perl
+#
+# Extract prodecure headers from ``.rpgle'' files. Extract the comment just
+# above the prodecure as well.
+#
+# Usage:
+# 	rpglehdr [--indent N] [--guard] [--help] [--version] [files]...
+
+use strict;
+use Getopt::Long qw{:config no_ignore_case gnu_compat bundling};
+use warnings;
+
+our $APP     = 'rpglehdr';
+our $VERSION = '0.0.3';
+
+my $guard = 0;
+my $indent = 6;
+
+$SIG{__WARN__} = sub
+{
+  my $msg = shift;
+  print STDERR "$APP: $msg";
+};
+
+sub scanproc($%)
+{
+  my ($procname, $const) = @_;
+  my %const = %$const;
+  my $pi;
+
+  while (<>) {
+    if (m{ ^ \h* dcl-pi\b }xms) {
+      $pi = $_;
+
+      while (<>) {
+        $pi .= $_;
+        last if m{ ^ \h* end-pi\b }xms;
+      }
+
+      $pi =~ s{ \*n }{$procname}xms;
+      $pi =~ s{ ^\h* }{  }gxms;
+      $pi =~ s{ ^ \h* (dcl|end)-pi }{$1-pr}gxms;
+
+      # Replace constans in text
+      if (%const) {
+        my $c = join '|', map { quotemeta } keys %const;
+        $pi =~ s{ \b ($c) \b }{$const{$1}}gxms;
+      }
+
+      return $pi;
+    }
+    last if m{ ^ \h* end-proc\b }xms;
+  }
+
+  return;
+};
+
+sub output
+{
+  my $msg = shift;
+  $msg =~ s{ ^ }{ " " x $indent }gexms;
+  print "$msg\n";
+};
+
+sub main
+{
+  my %const;
+  my $multicomm = 0;
+  my $comm = '';
+
+  GetOptions(
+    "g|guard" => \$guard,
+    "i|indent=i" => \$indent,
+    "h|help" => sub {
+      print <<EOF;
+$APP [--indent N] [--guard] [--help] [--version] [files]...
+
+  -g, --guard        Add include guard extracted from the filename.
+  -i, --indent=N     Number of spaces for prefix, default is 6
+  -h, --help         Show this help and exti
+  -V, --version      Output version information
+EOF
+      exit;
+    },
+    "V|version" => sub { printf "%s v%s\n", $APP, $VERSION; exit }
+  ) or exit 1;
+
+  while (<>) {
+    if ($. == 1 && $guard) {
+      $ARGV =~ m{ ([^/]+) \. [^/]+ $ }xms;
+      my $guard_name = "$1_def";
+      output("/if not defined($guard_name)\n/define $guard_name\n");
+    }
+
+    if (m{^ \h* /\* }xms) {
+      $multicomm = 1;
+    }
+    if ($multicomm) {
+      $comm .= $_;
+      $multicomm = !m{ \*/ }xms;
+      next;
+    }
+    if (m{^ \h* // }xms) {
+      $comm .= $_;
+      next;
+    }
+
+    if (m{ ^ \h* dcl-c \h+ (?<key>\w+) \h+
+          (?: const\( (?<val>.*?) \) | (?<val>\S+) ) \h* ; }xms) {
+      $const{$+{key}} = $+{val};
+    }
+
+    # Prodecure that is exported find ``dcl-pi''
+    if (m{^ \h* dcl-proc \h+ (\w+) .* \bexport\b }xms) {
+      my $procname = $1;
+      my $pr = scanproc($procname, \%const);
+      if ($pr) {
+        output($comm . $pr) if $pr;
+      }
+      else {
+        output($comm . "dcl-pr $procname;\nend-pr\n");
+      }
+      $comm = '';
+      next;
+    }
+
+    # Clear comment
+    $comm = '' unless m{ ^\h*$ }xms;
+  } continue {
+    if (eof) {
+      close ARGV;
+      %const     = ();
+      $comm      = '';
+      $multicomm = 0;
+      output("/endif") if $guard;
+    }
+  }
+};
+
+main

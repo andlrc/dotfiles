@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Diff two JSON files, by first sorting them on the keys, all but the last two
+# options are send as arguments to `diff'
+#
+# Usage:
+#	jsondiff [diff options] file1 file2
+# Example for git like difference where one file is from standard input:
+#	json_output | jsondiff -u file1 - | less
+#
+# Author: Andreas Louv <andreas@louv.dk>
+# Version: 0.2
+
+diff_args=()
+
+if test $# -lt 2
+then
+  >&2 printf 'Usage: %s [diff options] file1 file2\n' "${0##*/}"
+  exit 1
+fi
+
+for arg
+do
+  if [ "$pp" ]
+  then
+    diff_args+=("$pp")
+  fi
+  pp=$p
+  p=$arg
+done
+
+diff "${diff_args[@]}" <(jq --sort-keys . -- "$pp") <(jq --sort-keys . -- "$p")

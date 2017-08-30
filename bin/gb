@@ -1,0 +1,27 @@
+#!/bin/sh
+# Show git blame for symbolic links
+# Author Andreas Louv <andreas@louv.dk>
+#
+# Usage:
+#	gb /path/to/file [lineno] [git blame options]
+#	gb /path/to/file 51
+#	gb /path/to/file -p
+#
+# Version: 1.0
+
+if test $# -eq 0 || ! test -f "$1"
+then
+  printf 'Usage: %s file [lineno] [git blame options]\n' "${0##*/}"
+  exit 1
+fi
+
+file=$(realpath "$1"); shift
+dir=${file%/*}
+base=${file##*/}
+
+if test "$1" -gt 0 2> /dev/null 1>&2
+then
+  line=$1; shift
+fi
+
+cd "$dir" && git blame ${line:+-L $line,$line} "$@" -- "$base"
