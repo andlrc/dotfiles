@@ -1,14 +1,18 @@
 " Now that IceBreak supports ``**FREE'' we can use wider size in those files
 " having the compilation flag:
-if getline(1) =~? 'free="\*YES"'
-  setlocal textwidth=80
-else
-  setlocal textwidth=73 " 80 - 7 columns that IceBreak adds when compiling
-endif
+function! s:GetTW()
+  let line = getline(1)
+  if line =~? 'free="\*YES"' || line =~? '^\*\*FREE\s*$'
+    return 80
+  else
+    return 73 " 80 - 7 columns that IceBreak adds when compiling
+  endif
+endfunction
+let &l:textwidth = s:GetTW()
 
 setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
 
-" IceBreak add 7 columns
+" IceBreak's precompiler add the seven columns in the front
 let g:rpgle_indentStart = 0
 
 " RPG/ILE is in case-sensitive
@@ -20,11 +24,11 @@ setlocal keywordprg=man\ --sections=3p,3RPG,3RPGCOMPDIR,3RPGHSPEC
 setlocal makeprg=rpglemake\ %:p
 setlocal errorformat=%f:%l:%c:%m
 
-nnoremap <silent> <localleader>s !ipsed 's/		*/ /g;
+nnoremap <silent> <localleader>s !ipsed 's/\t\t*/ /g;
                                        \ s/\(\w\)  */\1	/;
                                        \ s/\(\w\)  */\1	/1' \|
-                                  \ column -t -s'	' -o' ' \|
-                                  \ sed 's/^/  /'<CR>
+                                \ column -t -s'	' -o' ' \|
+                                \ sed 's/^/  /'<CR>
 
 
 " #include and #define {{{
@@ -76,7 +80,7 @@ function! s:VariableDecl()
     endif
   endwhile
 
-  " currently positioned on the first line not being a variable declaration
+  " Currently positioned on the first line not being a variable declaration
   let lineno = lineno - 1
 
   " Go backwards to last declaration line, skipping blank lines as well as
