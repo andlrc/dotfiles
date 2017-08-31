@@ -3,14 +3,6 @@
 " This is my personal vim configuration.
 " Use at own risk, NO WARRANTY, to the extent permitted by law.
 
-" Plugins {{{
-
-packadd! rpgle.vim
-packadd! undotree
-packadd! matchit
-
-
-" }}}
 " Options {{{
 
 filetype plugin indent on
@@ -73,6 +65,11 @@ nnoremap ]I ]I:call PromptAndExec(":+1,$ijump! %d \022\027\015")<CR>
 
 nnoremap [D [D:call PromptAndExec(":djump %d \022\027\015")<CR>
 nnoremap ]D ]D:call PromptAndExec(":+1,$djump %d \022\027\015")<CR>
+
+" }}}
+" Enhanced % {{{
+
+packadd! matchit
 
 " }}}
 
