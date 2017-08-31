@@ -24,6 +24,7 @@ setlocal keywordprg=man\ --sections=3p,3RPG,3RPGCOMPDIR,3RPGHSPEC
 setlocal makeprg=rpglemake\ %:p
 setlocal errorformat=%f:%l:%c:%m
 
+" Align dcl-XX clusters
 nnoremap <silent> <localleader>s !ipsed 's/\t\t*/ /g;
                                        \ s/\(\w\)  */\1	/;
                                        \ s/\(\w\)  */\1	/1' \|
@@ -31,12 +32,8 @@ nnoremap <silent> <localleader>s !ipsed 's/\t\t*/ /g;
                                 \ sed 's/^/  /'<CR>
 
 
-" #include and #define {{{
-
-setlocal suffixesadd=.rpgle,.rpgleinc,.aspx,.asmx
-setlocal include=^\\s*/\\s*\\(include\\\|copy\\)\\\|<!--#include.*file="\ze[^"]*"
-setlocal includeexpr=tolower(substitute(v:fname,',','.file/',''))
-setlocal path=.,~/.cache/rpgledev/qrpglesrc.file,~/.cache/rpgledev/qasphdr.file,~/.cache/rpgledev,/mnt/dksrv206
+setlocal path=.,~/.cache/rpgledev/qrpglesrc.file,
+             \~/.cache/rpgledev/qasphdr.file,~/.cache/rpgledev,/mnt/dksrv206
 
 " Match declarations but also things with ``word word'', as it must also be
 " declarations inside data structures, procedure interfaces:
@@ -49,7 +46,6 @@ setlocal path=.,~/.cache/rpgledev/qrpglesrc.file,~/.cache/rpgledev/qasphdr.file,
 let &l:define = '^\%(.\{0,7}[dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
               \ '\|\s*dcl-\%(proc\|pr\|ds\|[sc]\)\s\+\ze\w\+\)'
 
-"  }}}
 " Jump to the end of the declaration specs in the current procedure {{{
 
 nnoremap <silent> <buffer> vd :call <SID>VariableDecl()<CR>
