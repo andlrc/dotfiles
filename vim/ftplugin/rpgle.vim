@@ -15,9 +15,6 @@ setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
 " IceBreak's precompiler add the seven columns in the front
 let g:rpgle_indentStart = 0
 
-" RPG/ILE is in case-sensitive
-setlocal tagcase=ignore nosmartcase ignorecase
-
 " POSIX man pages is nice to look through when ``bnddir('Q2ILE')'' is used.
 setlocal keywordprg=man\ --sections=3p,3RPG,3RPGCOMPDIR,3RPGHSPEC
 
@@ -48,45 +45,19 @@ let &l:define = '^\%(.\{0,7}[dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
 
 " Jump to the end of the declaration specs in the current procedure {{{
 
-nnoremap <silent> <buffer> vd :call <SID>VariableDecl()<CR>
-
 function! s:VariableDecl()
-
-  let r_boc    = '^\s*\%($\|//\)'
-  let r_decl   = '^\s*\%(dcl-proc\|dcl-c\|dcl-s\|dcl-ds\|dcl-pi\|dcl-pr' .
-               \ '\|end-ds\|end-pi\|end-pr\)'
-  let r_declin = '^\s*\w\+\s\+\w\+'
-
   if getline('.') !~? '^\s*dcl-proc\>'
-    norm [[
+    norm [[+
+  else
+    norm +
   endif
-
-  " TODO: Multi line comments might cause problems.
-  let lineno = line('.')
-
-  while lineno < line('$')
-    let line = getline(lineno)
-    if line =~? r_boc
-    \ || line =~? r_decl
-    \ || line =~? r_declin
-    \ && synIDattr(synID(lineno, 1, 0), 'name') ==# 'rpgleDclList'
-      let lineno = lineno + 1
-    else
-      break
-    endif
+  while getline('.') =~ '^\s*$' ||
+      \ synIDattr(synID(line('.'), col('.'), 1),
+                \ 'name') =~ '^\%(rpgleDcl\|rpgleComment\)'
+    norm +
   endwhile
-
-  " Currently positioned on the first line not being a variable declaration
-  let lineno = lineno - 1
-
-  " Go backwards to last declaration line, skipping blank lines as well as
-  " comments.
-  while getline(lineno) =~? r_boc && lineno > 1
-    let lineno = lineno - 1
-  endwhile
-
-  execute lineno
 endfunction
+nnoremap <silent> <buffer> vd :call <SID>VariableDecl()<CR>
 
 " }}}
 
