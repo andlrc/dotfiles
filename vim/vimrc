@@ -33,8 +33,8 @@ let maplocalleader = "\\"
 setglobal ignorecase smartcase hlsearch
 setglobal path=**
 setglobal grepprg=grep\ -nH\ --exclude='*.o'\ --exclude='*.tags'
-         \\ --exclude='tags'\ --exclude-dir=node_modules
-         \\ --exclude-dir=.git\ $*
+                     \\ --exclude='tags'\ --exclude-dir=node_modules
+                     \\ --exclude-dir=.git\ $*
 
 nnoremap <leader>g :grep<space>
 nnoremap <leader>f :g//#<left><left>
@@ -42,8 +42,8 @@ nnoremap gb :ls<cr>:b<space>
 
 " Power <CR> {{{
 
-cnoremap <expr> <CR> getcmdline() =~# '^[vg]/.*/#$'
-  \ ? '<CR>:call PromptAndExec(":%d\r")<CR>' : '<CR>'
+cnoremap <expr> <CR> getcmdline() !~# '^[vg]/.*/#$' ? '<CR>'
+                   \ : '<CR>:call PromptAndExec(":%d\r")<CR>'
 
 " }}}
 " Prompt And Exec Function {{{
@@ -80,7 +80,7 @@ set spellfile=~/.vim/spell.utf-8.add
 
 " zg will add <cword> to the custom spell file, sort that file after adding
 nnoremap zg zg:silent ! sort ~/.vim/spell.utf-8.add -o
-  \ ~/.vim/spell.utf-8.add<cr>:redraw!<cr>
+                           \ ~/.vim/spell.utf-8.add<cr>:redraw!<cr>
 
 " }}}
 " Enable automatic make on write {{{
@@ -155,10 +155,10 @@ nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
 
 " Toggle colorcolumn
 nnoremap <silent> <leader>cc
-       \ :let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''<CR>
+      \ :let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''<CR>
 
 nnoremap <silent> <leader>ss
-       \ :echo synIDattr(synID(line('.'), col('.'), 0), 'name')<CR>
+      \ :echo synIDattr(synID(line('.'), col('.'), 0), 'name')<CR>
 
 " }}}
 " Folding {{{

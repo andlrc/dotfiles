@@ -7,6 +7,7 @@ all:	wm shell editor config devel
 
 clean:
 	-rm -r ~/.config/i3/config
+	-rmdir ~/.config/i3
 	-rm -r ~/.i3status.conf
 	-rm -r ~/.zshrc
 	-rm -r ~/.zprofile
@@ -17,7 +18,9 @@ clean:
 	-rm -r ~/.xinputrc
 	-rm -r ~/.xmodmap
 	-rm -r ~/.config/termite/config
+	-rmdir ~/.config/termite
 	-rm -r ~/.config/fontconfig/config
+	-rmdir ~/.config/fontconfig
 
 .PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config ctags git X \
 	termite fontconfig devel
@@ -71,10 +74,10 @@ $P/xclip:
 $P/xdotool:
 	sudo pacman -S xdotool
 
-$P/unclutter:| $P/yaourt
+$P/unclutter:|	$P/yaourt
 	yaourt -S unclutter-xfixes-git
 
-/usr/share/fonts/TTF/fontawesome-webfont.ttf:| $P/yaourt
+/usr/share/fonts/TTF/fontawesome-webfont.ttf:|	$P/yaourt
 	yaourt -S ttf-font-awesome
 
 # }}}
@@ -131,10 +134,10 @@ ctags:	$P/ctags $P/rpglectags ~/.ctags
 ~/.ctags:	$(DW)/ctags/.ctags
 	ln -s $(DW)/ctags/.ctags ~/.ctags
 
-$P/ctags:| 	$P/yaourt
+$P/ctags:|	$P/yaourt
 	yaourt -S universal-ctags-git
 
-$P/rpglectags:| $P/yaourt
+$P/rpglectags:|	$P/yaourt
 	yaourt -S rpglectags-git
 
 git:	~/.gitconfig
@@ -217,7 +220,7 @@ $P/vpnc:
 	sudo pacman -S vpnc
 
 # Package Managers
-$P/npm:| $P/node
+$P/npm:|	$P/node
 	echo $P/npm
 	sudo pacman -S npm
 
@@ -225,10 +228,10 @@ $P/core_perl/cpan:
 	sudo pacman -S perl-cpan
 
 # Linters
-$P/jscs:| $P/npm
+$P/jscs:|	$P/npm
 	sudo npm install -g jscs
 
-$P/site_perl/perlcritic:| $P/core_perl/cpan
+$P/site_perl/perlcritic:|	$P/core_perl/cpan
 	sudo cpan install Perl::Critic
 
 $P/shellcheck:
