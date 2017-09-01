@@ -2,17 +2,8 @@
 --exclude=.git
 --exclude=node_modules/\*
 --exclude=dist/\*
---exclude='db/*'
---exclude='log/*'
---exclude=.svn
---exclude=.hg
---exclude=min
---exclude=vendor
 --exclude=\*.min.\*
 --exclude=\*.map
---exclude=\*.swp
 --exclude=\*.bak
---exclude=\*.pyc
---exclude=\*.tar.\*
 
 --regex-sh=/^\s*(\w+)=/\1/v,variable/
