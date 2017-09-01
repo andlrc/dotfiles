@@ -117,7 +117,7 @@ else
 			mv "$tagstmp" tags
 			rm "$moditmp"
 
-			rpglectags -a "${modified[$@]}"
+			rpglectags -a "${modified[@]}"
 		fi
 	fi
 fi
