@@ -1,11 +1,25 @@
 # vim: fdm=marker
 
 P	= /usr/bin
-DW	= $$(git rev-parse --show-toplevel)
+DW	= $(shell git rev-parse --show-toplevel)
 
 all:	wm shell editor config devel
 
-.PHONY:	all wm i3 irc irssi shell zsh editor vim ed config ctags git X \
+clean:
+	-rm -r ~/.config/i3/config
+	-rm -r ~/.i3status.conf
+	-rm -r ~/.zshrc
+	-rm -r ~/.zprofile
+	-rm -r ~/.vim
+	-rm -r ~/.ctags
+	-rm -r ~/.gitconfig
+	-rm -r ~/.xinitrc
+	-rm -r ~/.xinputrc
+	-rm -r ~/.xmodmap
+	-rm -r ~/.config/termite/config
+	-rm -r ~/.config/fontconfig/config
+
+.PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config ctags git X \
 	termite fontconfig devel
 
 # WM {{{
@@ -14,10 +28,15 @@ wm:	i3
 
 i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu $P/dmenu \
 	$P/feh $P/redshift $P/scrot $P/xclip $P/xdotool $P/unclutter         \
-	/usr/share/fonts/TTF/fontawesome-webfont.ttf
+	/usr/share/fonts/TTF/fontawesome-webfont.ttf                         \
+	~/.config/i3/config ~/.i3status.conf
+
+~/.config/i3/config:	$(DW)/i3/i3.cfg
 	mkdir -p ~/.config/i3
-	-ln -s $(DW)/i3/i3.cfg ~/.config/i3/config
-	-ln -s $(DW)/i3/i3status.cfg ~/.i3status.conf
+	ln -s $(DW)/i3/i3.cfg ~/.config/i3/config
+
+~/.i3status.conf:	$(DW)/i3/i3status.cfg
+	ln -s $(DW)/i3/i3status.cfg ~/.i3status.conf
 
 $P/i3:
 	sudo pacman -S i3-wm
@@ -52,10 +71,10 @@ $P/xclip:
 $P/xdotool:
 	sudo pacman -S xdotool
 
-$P/unclutter: | $P/yaourt
+$P/unclutter:| $P/yaourt
 	yaourt -S unclutter-xfixes-git
 
-/usr/share/fonts/TTF/fontawesome-webfont.ttf: | $P/yaourt
+/usr/share/fonts/TTF/fontawesome-webfont.ttf:| $P/yaourt
 	yaourt -S ttf-font-awesome
 
 # }}}
@@ -73,9 +92,13 @@ $P/irssi:
 
 shell:	zsh
 
-zsh:	$P/zsh
-	-ln -s $(DW)/zsh/.zshrc ~/.zshrc
-	-ln -s $(DW)/zsh/.zprofile ~/.zprofile
+zsh:	$P/zsh ~/.zshrc ~/.zprofile
+
+~/.zshrc:	$(DW)/zsh/.zshrc
+	ln -s $(DW)/zsh/.zshrc ~/.zshrc
+
+~/.zprofile:	$(DW)/zsh/.zprofile
+	ln -s $(DW)/zsh/.zprofile ~/.zprofile
 
 $P/zsh:
 	sudo pacman -S zsh
@@ -85,8 +108,10 @@ $P/zsh:
 
 editor:	vim ed
 
-vim:	$P/gvim ctags
-	test -e ~/.vim || ln -s $(DW)/vim ~/.vim
+vim:	~/.vim $P/gvim ctags
+
+~/.vim:	$(DW)/vim
+	ln -s $(DW)/vim ~/.vim
 
 $P/gvim:
 	sudo pacman -S gvim
@@ -101,33 +126,47 @@ $P/ed:
 
 config:	ctags git X termite fontconfig
 
-ctags:	$P/ctags $P/rpglectags
-	-ln -s $(DW)/ctags/.ctags ~/.ctags
+ctags:	$P/ctags $P/rpglectags ~/.ctags
 
-$P/ctags: | $P/yaourt
+~/.ctags:	$(DW)/ctags/.ctags
+	ln -s $(DW)/ctags/.ctags ~/.ctags
+
+$P/ctags:| 	$P/yaourt
 	yaourt -S universal-ctags-git
 
-$P/rpglectags: | $P/yaourt
+$P/rpglectags:| $P/yaourt
 	yaourt -S rpglectags-git
 
-git:
-	-ln -s $(DW)/git/.gitconfig ~/.gitconfig
+git:	~/.gitconfig
 
-X:
-	-ln -s $(DW)/X/.xinitrc ~/.xinitrc
-	-ln -s $(DW)/X/.xinputrc ~/.xinputrc
-	-ln -s $(DW)/X/.xmodmap ~/.xmodmap
+~/.gitconfig:	$(DW)/git/.gitconfig
+	ln -s $(DW)/git/.gitconfig ~/.gitconfig
 
-termite: $P/termite
+X:	~/.xinitrc ~/.xinputrc ~/.xmodmap
+
+~/.xinitrc:	$(DW)/X/.xinitrc
+	ln -s $(DW)/X/.xinitrc ~/.xinitrc
+
+~/.xinputrc:	$(DW)/X/.xinputrc
+	ln -s $(DW)/X/.xinputrc ~/.xinputrc
+
+~/.xmodmap:	$(DW)/X/.xmodmap
+	ln -s $(DW)/X/.xmodmap ~/.xmodmap
+
+termite:	$P/termite ~/.config/termite/config
+
+~/.config/termite/config:	$(DW)/termite/termite.cfg
 	mkdir -p ~/.config/termite
-	-ln -s $(DW)/termite/termite.cfg ~/.config/termite/config
+	ln -s $(DW)/termite/termite.cfg ~/.config/termite/config
 
 $P/termite:
 	sudo pacman -S termite
 
-fontconfig:
+fontconfig:	~/.config/fontconfig/config
+
+~/.config/fontconfig/config:	$(DW)/fontconfig/fontconfig.xml
 	mkdir -p ~/.config/fontconfig
-	-ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
+	ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
 
 # }}}
 # Development {{{
@@ -178,7 +217,7 @@ $P/vpnc:
 	sudo pacman -S vpnc
 
 # Package Managers
-$P/npm: | $P/node
+$P/npm:| $P/node
 	echo $P/npm
 	sudo pacman -S npm
 
@@ -186,10 +225,10 @@ $P/core_perl/cpan:
 	sudo pacman -S perl-cpan
 
 # Linters
-$P/jscs: | $P/npm
+$P/jscs:| $P/npm
 	sudo npm install -g jscs
 
-$P/site_perl/perlcritic: | $P/core_perl/cpan
+$P/site_perl/perlcritic:| $P/core_perl/cpan
 	sudo cpan install Perl::Critic
 
 $P/shellcheck:
