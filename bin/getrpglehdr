@@ -50,7 +50,7 @@ do
 	   of="$out_file" \
 	   bs="$lwidth"   \
 	   cbs="$lwidth"  \
-	   conv=ascii,lcase 2> /dev/null
+	   conv=ascii 2> /dev/null
 
 	printf "      * Original file: '%s'\n" "$mbr_file" >> "$out_file"
 
