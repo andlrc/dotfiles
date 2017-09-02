@@ -46,16 +46,25 @@ let &l:define = '^\%(.\{0,7}[dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
 " Jump to the end of the declaration specs in the current procedure {{{
 
 function! s:VariableDecl()
+  mark `
   if getline('.') !~? '^\s*dcl-proc\>'
-    norm [[+
-  else
-    norm +
+    norm [[
   endif
-  while getline('.') =~ '^\s*$' ||
-      \ synIDattr(synID(line('.'), col('.'), 1),
-                \ 'name') =~ '^\%(rpgleDcl\|rpgleComment\)'
+  " Move forward to first non declaration statement
+  while 1
     norm +
+    if getline('.') =~ '^\s*$'
+      continue
+    endif
+    let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
+    if syn_name !~ '^\%(rpgleDcl\|rpgleComment\)' ||
+     \ syn_name =~ '^\%(rpgleDclProcBody\)'
+      break
+    endif
   endwhile
+  " Move back skipping blank links leaving the cursor on the last line
+  " containing a declaration statement.
+  exe prevnonblank(line('.') - 1)
 endfunction
 nnoremap <silent> <buffer> vd :call <SID>VariableDecl()<CR>
 
