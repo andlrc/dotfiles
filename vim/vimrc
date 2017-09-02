@@ -15,7 +15,7 @@ set backspace=indent,eol,start
 set history=1000
 set undofile undoreload=10000
 set dir=~/.vim/tmp/swap//
-set list showbreak=↪ listchars=tab:¦\ ,eol:¬,extends:❯,precedes:❮
+set list showbreak=↪ listchars=tab:¦\ ,extends:❯,precedes:❮
 set matchtime=0
 set shell=/bin/bash
 set nrformats-=octal
