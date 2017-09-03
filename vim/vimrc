@@ -13,7 +13,7 @@ set title
 set hidden
 set backspace=indent,eol,start
 set history=1000
-set undofile undoreload=10000
+set undofile undodir=~/.vim/tmp/undo//
 set dir=~/.vim/tmp/swap//
 set list showbreak=↪ listchars=tab:¦\ ,extends:❯,precedes:❮
 set matchtime=0
@@ -85,12 +85,12 @@ nnoremap zg zg:silent ! sort ~/.vim/spell.utf-8.add -o
 " }}}
 " Enable automatic make on write {{{
 
-command! -bang AutoMake call <SID>AutoMakeSetup('<bang>' == '!' ? 1 : 0)
+command! -bang AutoMake call <SID>AutoMake(<bang>0)
 
-function! s:AutoMakeSetup(unset)
+function! s:AutoMake(bang)
   augroup AutoMake
     au!
-    if a:unset == 0
+    if !a:bang
       au BufWritePost <buffer> call AutoMake()
     endif
   augroup END
@@ -126,8 +126,8 @@ set wildmenu
 set wildmode=longest,full
 set wildignorecase
 set wildignore+=.git,*.o
-
-" set completeopt+=menu,menuone
+set completeopt-=preview
+set completeopt+=menuone
 
 " }}}
 " Wrapping {{{
@@ -136,11 +136,6 @@ setglobal nowrap
 setglobal textwidth=80
 set formatoptions+=jo
 set formatoptions-=t
-
-" }}}
-" Backups {{{
-
-set undodir=~/.vim/tmp/undo//
 
 " }}}
 " Abbreviations {{{
@@ -153,7 +148,6 @@ inorea al@ andreas@louv.dk
 
 nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
 
-" Toggle colorcolumn
 nnoremap <silent> <leader>cc
       \ :let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''<CR>
 
@@ -172,7 +166,6 @@ augroup LazyFolds
   au InsertEnter,WinLeave * :call <SID>LazyFolds(0)
   au InsertLeave,WinEnter * :call <SID>LazyFolds(1)
 augroup END
-
 
 function! s:LazyFolds(type)
   if a:type == 0
