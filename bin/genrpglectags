@@ -6,14 +6,13 @@
 
 pgm=${0##*/}
 version=0.4
-usage='{ -h | -V | { -p project | -c } [ -d ] }'
+usage='{ -h | -V | { -p project | -c } }'
 
 project=""
-dry_run=""
 
 shopt -s nullglob
 
-while getopts "hVdcp:" opt
+while getopts "hVcp:" opt
 do
 	case $opt in
 		h)
@@ -36,9 +35,6 @@ HELP
 			project=$(pwd |
 			sed 's=^.*/\([^/]*\)/[^/]*/services.*=\1=p;d')
 			;;
-		d)
-			dry_run=1
-			;;
 		p)
 			project=$OPTARG
 			;;
@@ -57,45 +53,26 @@ done
 
 if test -z "$project"
 then
-	>&2 printf 'Usage: %s %s\n' "$pgm" "$usage"
+	>&2 printf "Usage '%s' %s\n" "$pgm" "$usage"
 	exit 1
 fi
-
-portfolio_dir=/mnt/dksrv206/www/Portfolio/Admin/Services
-bas_dir=/mnt/dksrv206/www/dev/bas/shared/services
-project_dir=/mnt/dksrv206/www/dev/$project/customized/services
-
-args=(
-  "$portfolio_dir"/[!_]*[!_].as[pm]x
-  "$bas_dir"/[!_]*[!_].as[pm]x
-  "$bas_dir/qrpghdr"/*.rpgleinc
-
-  "$portfolio_dir"/[!_]*[!_].rpgle
-  "$bas_dir"/[!_]*[!_].rpgle
-  ~/.cache/rpgledev/*.file/*.rpgleinc
-)
-
-if test "$project" != "bas"; then
-  args+=("$project_dir"/[!_]*[!_].as[pm]x)
-  args+=("$project_dir"/[!_]*[!_].rpgle)
-fi
-
-if test -n "$dry_run"
-then
-	printf '%s\n' "${args[@]}"
-else
-	>&2 printf "Generating tags for '%s'\n" "$project"
+gen_tags()
+{
+	dir=$1; shift
+	file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
+	cd "$dir"
+	>&2 printf "Generating tags in '%s'\n" "$dir"
 
 	if ! test -e tags
 	then
 		>&2 printf "Generate all tags\n" "$project"
-		rpglectags "${args[@]}"
+		rpglectags $file_globs
 	else
 		tags_stat=$(stat -c %Y tags)
 		modified=()
 		>&2 printf "Partial generation, 'stat tags' = %d\n" \
-		           "$tags_stat"
-		for file in "${args[@]}"
+			   "$tags_stat"
+		for file in $file_globs
 		do
 			file_stat=$(stat -c %Y "$file")
 			if test "$file_stat" -gt "$tags_stat"
@@ -120,4 +97,11 @@ else
 			rpglectags -a "${modified[@]}"
 		fi
 	fi
-fi
+}
+
+for dir in /mnt/dksrv206/www/Portfolio/Admin/Services		\
+	   /mnt/dksrv206/www/dev/bas/shared/services		\
+	   /mnt/dksrv206/www/dev/"$project"/customized/services
+do
+	gen_tags "$dir"
+done

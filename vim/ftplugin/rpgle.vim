@@ -32,6 +32,10 @@ nnoremap <silent> <localleader>s !ipsed 's/\t\t*/ /g;
 setlocal path=.,~/.cache/rpgledev/qrpglesrc.file,
              \~/.cache/rpgledev/qasphdr.file,~/.cache/rpgledev,/mnt/dksrv206
 
+setlocal tags=tags,/mnt/dksrv206/www/dev/bas/shared/services/tags,
+             \/mnt/dksrv206/www/Portfolio/Admin/Services/tags,
+             \~/.cache/rpgledev/*.file/tags
+
 " Match declarations but also things with ``word word'', as it must also be
 " declarations inside data structures, procedure interfaces:
 " dcl-ds abc;

@@ -57,3 +57,10 @@ do
 	# Show top of file to give a human a change to see the width
 	>&2 head -5 "$out_file"
 done
+
+for dir in "$out_dir"/*.file
+do
+	(
+		cd "$dir" && rpglectags *.rpgleinc
+	)
+done
