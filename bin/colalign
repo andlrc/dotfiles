@@ -1,0 +1,20 @@
+#!/bin/bash
+
+pgm=${0##*/}
+
+if test "$#" -eq 0
+then
+	>&2 printf "Usage: %s <COLS>\n" "$pgm"
+	exit 1
+fi
+
+awk -v cols="$1" '
+	{
+		gsub("\t+", " ")
+		sub("^ +", "")
+		for (i = 0; i < cols; i++) {
+			sub(" +", "\t")
+		}
+		print
+	}' |
+column -t -s '	' -o' '

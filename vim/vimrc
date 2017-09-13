@@ -51,10 +51,12 @@ cnoremap <expr> <CR> getcmdline() !~# '^[vg]/.*/#$' ? '<CR>'
 function! PromptAndExec(cmd)
   let ans = input('Type number and <Enter> (empty cancels): ')
 
-  try
-    silent execute 'normal! ' . printf(a:cmd, ans)
-  catch /E387/ "E387: Match is on current line
-  endtry
+  if ans !~ '^\s*$'
+    try
+      silent execute 'normal! ' . printf(a:cmd, ans)
+    catch /E387/ "E387: Match is on current line
+    endtry
+  endif
 endfunction
 
 " }}}
@@ -83,29 +85,6 @@ nnoremap zg zg:silent ! sort ~/.vim/spell.utf-8.add -o
                            \ ~/.vim/spell.utf-8.add<cr>:redraw!<cr>
 
 " }}}
-" Enable automatic make on write {{{
-
-command! -bang AutoMake call <SID>AutoMake(<bang>0)
-
-function! s:AutoMake(bang)
-  augroup AutoMake
-    au!
-    if !a:bang
-      au BufWritePost <buffer> call AutoMake()
-    endif
-  augroup END
-endfunction
-
-function! AutoMake()
-  silent make!
-  silent redraw!
-  try
-    cc
-  catch /E42/
-  endtry
-endfunction
-
-" }}}
 " Trailing whitespace {{{
 
 " Clean trailing whitespace
@@ -127,7 +106,6 @@ set wildmode=longest,full
 set wildignorecase
 set wildignore+=.git,*.o
 set completeopt-=preview
-set completeopt+=menuone
 
 " }}}
 " Wrapping {{{

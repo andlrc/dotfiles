@@ -22,12 +22,7 @@ setlocal makeprg=rpglemake\ %:p
 setlocal errorformat=%f:%l:%c:%m
 
 " Align dcl-XX clusters
-nnoremap <silent> <localleader>s !ipsed 's/\t\t*/ /g;
-                                       \ s/\(\w\)  */\1	/;
-                                       \ s/\(\w\)  */\1	/1' \|
-                                \ column -t -s'	' -o' ' \|
-                                \ sed 's/^/  /'<CR>
-
+nnoremap <silent> <localleader>s !ipcolalign 2<CR>
 
 setlocal path=.,~/.cache/rpgledev/qrpglesrc.file,
              \~/.cache/rpgledev/qasphdr.file,~/.cache/rpgledev,/mnt/dksrv206
