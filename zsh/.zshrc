@@ -1,8 +1,8 @@
-# vim: fdm=marker fmr={{{,}}} fdl=0
+# vim: fdm=marker
 # Author Andreas Louv <andreas@louv.dk>
 # This is my personal zsh configuration.
 # Use at own risk, NO WARRANTY, to the extent permitted by law.
-# Basic Settings {{{
+# Basic Settings {{{1
 
 export CDPATH="$HOME/work"
 
@@ -11,8 +11,7 @@ setopt auto_pushd pushd_ignore_dups pushdminus
 # Make <C-w> follow vim more closely
 WORDCHARS='@'
 
-# }}}
-# History configuration {{{
+# History configuration {{{1
 
 setopt HIST_IGNORE_SPACE
 HISTSIZE=1000000000
@@ -20,12 +19,11 @@ HISTFILESIZE=1000000000
 SAVEHIST=1000000000
 HISTFILE="$HOME/.zsh_history"
 
-# }}}
-# Convenience mappings {{{
+# Convenience mappings {{{1
 
 bindkey -e
 
-# <C-Z> will call 'fg' when no process is running in the foreground {{{
+# <C-Z> will call 'fg' when no process is running in the foreground {{{2
 
 toggle-ctrl-z () {
   if [ "${#BUFFER}" -eq 0 ]; then
@@ -40,17 +38,13 @@ toggle-ctrl-z () {
 zle -N toggle-ctrl-z
 bindkey '^Z' toggle-ctrl-z
 
-# }}}
-# <C-X><C-E> will edit current command in editor {{{
+# <C-X><C-E> will edit current command in editor {{{2
 
 autoload -U edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
 
-# }}}
-
-# }}}
-# Pre command and PS1, PS2, right PS1 {{{
+# Pre command and PS1, PS2, right PS1 {{{1
 
 precmd () {
   # List most recent changed files when changing directory
@@ -64,22 +58,15 @@ precmd () {
   print -Pn "\e]2;%d\a"
 }
 
-# Prompt {{{
-
 declare -x PROMPT="%~ "
 declare -x PROMPT2="--> "
 
-# }}}
-
-# }}}
-
-# More POSIX {{{
+# More POSIX {{{1
 
 setopt NO_NOMATCH
 setopt RM_STAR_SILENT
 
-# }}}
-# Command completion {{{
+# Command completion {{{1
 
 # Enable <tab> completion
 autoload -U compinit promptinit
@@ -124,8 +111,7 @@ compdef '_files -W /etc/vpnc' vpnc
 # Complete for zipSeries
 compdef _gnu_generic zipSeries
 
-# }}}
-# Aliases {{{
+# Aliases {{{1
 
 # Suppress annoying directory print when directory is found in '$CDPATH'
 alias cd="cd > /dev/null"
@@ -135,8 +121,7 @@ alias l='ls -lAh'
 
 alias grep="grep --color=auto --exclude-dir=.git"
 
-# }}}
-# Function and includes {{{
+# Function and includes {{{1
 
 work() {
   export CDPATH="$CDPATH${CDPATH:+:}/mnt/dksrv206/www/dev"

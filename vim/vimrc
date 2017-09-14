@@ -1,9 +1,9 @@
-" vim: fdm=marker fmr={{{,}}} fdl=0
+" vim: fdm=marker
 " Author Andreas Louv <andreas@louv.dk>
 " This is my personal vim configuration.
 " Use at own risk, NO WARRANTY, to the extent permitted by law.
 
-" Options {{{
+" Options {{{1
 
 filetype plugin indent on
 syntax on
@@ -15,20 +15,17 @@ set backspace=indent,eol,start
 set history=1000
 set undofile undodir=~/.vim/tmp/undo//
 set dir=~/.vim/tmp/swap//
-set list showbreak=↪ listchars=tab:¦\ ,extends:❯,precedes:❮
 set matchtime=0
 set shell=/bin/bash
 set nrformats-=octal
 set visualbell belloff=wildmode
 
-" }}}
-" Leader {{{
+" Leader {{{1
 
 let mapleader = "\<Space>"
 let maplocalleader = "\\"
 
-" }}}
-" Searching and Navigating Files {{{
+" Searching and Navigating Files {{{1
 
 setglobal ignorecase smartcase hlsearch
 setglobal path=**
@@ -40,13 +37,12 @@ nnoremap <leader>g :grep<space>
 nnoremap <leader>f :g//#<left><left>
 nnoremap gb :ls<cr>:b<space>
 
-" Power <CR> {{{
+" Power <CR> {{{2
 
 cnoremap <expr> <CR> getcmdline() !~# '^[vg]/.*/#$' ? '<CR>'
                    \ : '<CR>:call PromptAndExec(":%d\r")<CR>'
 
-" }}}
-" Prompt And Exec Function {{{
+" Prompt And Exec Function {{{2
 
 function! PromptAndExec(cmd)
   let ans = input('Type number and <Enter> (empty cancels): ')
@@ -59,8 +55,7 @@ function! PromptAndExec(cmd)
   endif
 endfunction
 
-" }}}
-" Faster define and include {{{
+" Faster define and include {{{2
 
 nnoremap [I [I:call PromptAndExec(":ijump! %d \022\027\015")<CR>
 nnoremap ]I ]I:call PromptAndExec(":+1,$ijump! %d \022\027\015")<CR>
@@ -68,15 +63,11 @@ nnoremap ]I ]I:call PromptAndExec(":+1,$ijump! %d \022\027\015")<CR>
 nnoremap [D [D:call PromptAndExec(":djump %d \022\027\015")<CR>
 nnoremap ]D ]D:call PromptAndExec(":+1,$djump %d \022\027\015")<CR>
 
-" }}}
-" Enhanced % {{{
+" Enhanced % {{{2
 
 packadd! matchit
 
-" }}}
-
-" }}}
-" Spelling {{{
+" Spelling {{{1
 
 set spellfile=~/.vim/spell.utf-8.add
 
@@ -84,22 +75,7 @@ set spellfile=~/.vim/spell.utf-8.add
 nnoremap zg zg:silent ! sort ~/.vim/spell.utf-8.add -o
                            \ ~/.vim/spell.utf-8.add<cr>:redraw!<cr>
 
-" }}}
-" Trailing whitespace {{{
-
-" Clean trailing whitespace
-nnoremap <silent> <leader>ww mz:keepp %s/\\\@<!\s\+$//e<cr>`z
-
-" Only shown when not in insert mode
-augroup ShowTrail
-  au!
-  au InsertEnter * :set listchars-=trail:⌴
-  au InsertLeave * :set listchars+=trail:⌴
-  set listchars+=trail:⌴
-augroup END
-
-" }}}
-" Completion {{{
+" Completion {{{1
 
 set wildmenu
 set wildmode=longest,full
@@ -107,22 +83,19 @@ set wildignorecase
 set wildignore+=.git,*.o
 set completeopt-=preview
 
-" }}}
-" Wrapping {{{
+" Wrapping {{{1
 
 setglobal nowrap
 setglobal textwidth=80
 set formatoptions+=jo
 set formatoptions-=t
 
-" }}}
-" Abbreviations {{{
+" Abbreviations {{{1
 
 inorea <al@ <andreas@louv.dk
 inorea al@ andreas@louv.dk
 
-" }}}
-" Convenience mappings {{{
+" Convenience mappings {{{1
 
 nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
 
@@ -132,13 +105,13 @@ nnoremap <silent> <leader>cc
 nnoremap <silent> <leader>ss
       \ :echo synIDattr(synID(line('.'), col('.'), 0), 'name')<CR>
 
-" }}}
-" Folding {{{
+nnoremap <silent> <leader>ww
+      \ mz:keepp %s/\\\@<!\s\+$//e<cr>`z
 
-setglobal foldlevelstart=10
+" Folding {{{1
 
-" Automatic set foldmethod to manual when entering insert mode, this is done to
-" prevent vim from unfolding automatic folds, when the code changes.
+" Automatic set foldmethod to manual when entering insert mode, this is done
+" to prevent vim from unfolding automatic folds, when the code changes.
 augroup LazyFolds
   au!
   au InsertEnter,WinLeave * :call <SID>LazyFolds(0)
@@ -150,18 +123,16 @@ function! s:LazyFolds(type)
     let b:lazy_foldmethod=&foldmethod
     setlocal foldmethod=manual
   elseif exists('b:lazy_foldmethod')
-    execute 'setlocal foldmethod=' . b:lazy_foldmethod
+    let &l:foldmethod = b:lazy_foldmethod
   endif
 endfunction
 
-" }}}
-" Color Fixes {{{
+" Color Fixes {{{1
 
 highlight Folded term=standout ctermfg=7 ctermbg=0
 highlight! link Conceal PreProc
 
-" }}}
-" FileType Detect {{{
+" FileType Detect {{{1
 
 augroup FT_Detect
   au!
@@ -172,8 +143,7 @@ augroup FT_Detect
   au BufNewFile,BufRead *.qdmd setlocal filetype=qdmd
 augroup END
 
-" }}}
-" UndotreeToggle {{{
+" UndotreeToggle {{{1
 
 let g:undotree_SetFocusWhenToggle = 1
 

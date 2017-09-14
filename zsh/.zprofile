@@ -1,8 +1,8 @@
-# vim: fdm=marker fmr={{{,}}} fdl=0
+# vim: fdm=marker
 # Author Andreas Louv <andreas@louv.dk>
 # This is my personal zsh configuration.
 # Use at own risk, NO WARRANTY, to the extent permitted by law.
-# Environment Variables {{{
+# Environment Variables {{{1
 
 export DW_ROOT="$HOME/work/dw"
 
@@ -31,5 +31,3 @@ path+=(
   "$HOME/.gem/ruby/2.4.0/bin"
 )
 export PATH
-
-# }}}
