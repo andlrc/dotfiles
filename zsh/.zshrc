@@ -144,5 +144,3 @@ fi
 if [ -f "$HOME/work/extensions/util/.zshrc" ]; then
   source "$HOME/work/extensions/util/.zshrc"
 fi
-
-# }}}
