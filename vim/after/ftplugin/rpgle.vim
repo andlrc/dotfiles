@@ -10,7 +10,7 @@ function! s:GetTW()
 endfunction
 let &l:textwidth = s:GetTW()
 
-setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
+setlocal shiftwidth=2 softtabstop=2 expandtab
 
 " IceBreak's precompiler add the seven columns in the front
 let g:rpgle_indentStart = 0
@@ -44,7 +44,7 @@ setlocal tags=tags,/mnt/dksrv206/www/dev/bas/shared/services/tags,
 let &l:define = '^\%(.\{0,7}[dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
               \ '\|\s*dcl-\%(proc\|pr\|ds\|[sc]\)\s\+\ze\w\+\)'
 
-" Jump to the end of the declaration specs in the current procedure {{{
+" Jump to the end of the declaration specs in the current procedure {{{1
 
 function! s:VariableDecl()
   mark `
@@ -68,7 +68,5 @@ function! s:VariableDecl()
   exe prevnonblank(line('.') - 1)
 endfunction
 nnoremap <silent> <buffer> vd :call <SID>VariableDecl()<CR>
-
-" }}}
 
 " vim: fdm=marker fdl=0
