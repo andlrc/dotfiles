@@ -1,7 +1,6 @@
 # vim: fdm=marker
 # Author Andreas Louv <andreas@louv.dk>
-# This is my personal zsh configuration.
-# Use at own risk, NO WARRANTY, to the extent permitted by law.
+
 # Basic Settings {{{1
 
 export CDPATH="$HOME/work"

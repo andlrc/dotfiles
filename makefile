@@ -80,8 +80,7 @@ $P/unclutter:|	$P/yaourt
 /usr/share/fonts/TTF/fontawesome-webfont.ttf:|	$P/yaourt
 	yaourt -S ttf-font-awesome
 
-# }}}
-# IRC {{{
+# IRC {{{1
 
 irc:	irssi
 
@@ -90,8 +89,7 @@ irssi:	$P/irssi
 $P/irssi:
 	sudo pacman -S irssi
 
-# }}}
-# Shell {{{
+# Shell {{{1
 
 shell:	zsh
 
@@ -106,8 +104,7 @@ zsh:	$P/zsh ~/.zshrc ~/.zprofile
 $P/zsh:
 	sudo pacman -S zsh
 
-# }}}
-# Editor {{{
+# Editor {{{1
 
 editor:	vim ed
 
@@ -124,8 +121,7 @@ ed:	$P/ed
 $P/ed:
 	sudo pacman -S ed
 
-# }}}
-# Config {{{
+# Config {{{1
 
 config:	ctags git X termite fontconfig
 
@@ -171,8 +167,7 @@ fontconfig:	~/.config/fontconfig/config
 	mkdir -p ~/.config/fontconfig
 	ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
 
-# }}}
-# Development {{{
+# Development {{{1
 
 devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq   \
 	$P/wish $P/expect $P/dash $P/identify $P/ssh $P/openconnect       \
@@ -249,5 +244,3 @@ $P/yaourt:
 		git clone https://aur.archlinux.org/yaourt.git \
 		build/yu
 	cd build/yu && mkpkg -si
-
-# }}}
