@@ -18,6 +18,8 @@ set nrformats-=octal
 set undofile undodir=~/.vim/tmp/undo//
 set dir=~/.vim/tmp/swap//
 
+set listchars+=tab:\|\ 
+
 " Leader {{{1
 
 let mapleader = "\<Space>"
