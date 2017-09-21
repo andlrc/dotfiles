@@ -66,7 +66,7 @@ gen_tags()
 	if ! test -e tags
 	then
 		>&2 printf "Generate all tags\n" "$project"
-		rpglectags $file_globs
+		rpglectags $file_globs < /dev/null
 	else
 		tags_stat=$(stat -c %Y tags)
 		modified=()
@@ -94,7 +94,7 @@ gen_tags()
 			mv "$tagstmp" tags
 			rm "$moditmp"
 
-			rpglectags -a "${modified[@]}"
+			rpglectags -a "${modified[@]}" < /dev/null
 		fi
 	fi
 }
