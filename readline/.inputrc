@@ -6,9 +6,9 @@ set bell-style visible
 set show-all-if-ambiguous on
 set show-all-if-unmodified on
 
-# smarter history search w/ up and down arrows
-"\e[A": history-search-backward
-"\e[B": history-search-forward
+# smarter history search
+"\C-P": history-search-backward
+"\C-N": history-search-forward
 
 # Allow UTF-8 input and output, instead of showing stuff like $'\0123\0456'
 set input-meta on

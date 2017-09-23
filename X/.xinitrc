@@ -10,8 +10,12 @@ fi
 cd ~
 
 # A naive way to disable the TouchPad
-id=$(xinput list | sed -n '/TouchPad\|Synaptics TM3075-002/{s/.*=\([[:digit:]]*\).*/\1/p;q}')
-[ -n "$id" ] && xinput disable "$id"
+id=$(xinput list |
+     sed -n '/TouchPad\|Synaptics TM3075-002/ {
+     		s/.*=\([[:digit:]]*\).*/\1/p
+		q
+	     }')
+test -n "$id" && xinput disable "$id"
 
 xmodmap ~/.xmodmap
 

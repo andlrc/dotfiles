@@ -15,7 +15,7 @@ clean:
 	-rm -r ~/.ctags
 	-rm -r ~/.gitconfig
 	-rm -r ~/.xinitrc
-	-rm -r ~/.xinputrc
+	-rm -r ~/.inputrc
 	-rm -r ~/.xmodmap
 	-rm -r ~/.config/termite/config
 	-rmdir ~/.config/termite
@@ -123,7 +123,7 @@ $P/ed:
 
 # Config {{{1
 
-config:	ctags git X termite fontconfig
+config:	ctags git X readline termite fontconfig
 
 ctags:	$P/ctags $P/rpglectags ~/.ctags
 
@@ -141,16 +141,18 @@ git:	~/.gitconfig
 ~/.gitconfig:	$(DW)/git/.gitconfig
 	ln -s $(DW)/git/.gitconfig ~/.gitconfig
 
-X:	~/.xinitrc ~/.xinputrc ~/.xmodmap
+X:	~/.xinitrc ~/.xmodmap
 
 ~/.xinitrc:	$(DW)/X/.xinitrc
 	ln -s $(DW)/X/.xinitrc ~/.xinitrc
 
-~/.xinputrc:	$(DW)/X/.xinputrc
-	ln -s $(DW)/X/.xinputrc ~/.xinputrc
-
 ~/.xmodmap:	$(DW)/X/.xmodmap
 	ln -s $(DW)/X/.xmodmap ~/.xmodmap
+
+readline: ~/.inputrc
+
+~/.inputrc:	$(DW)/readline/.inputrc
+	ln -s $(DW)/readline/.inputrc ~/.inputrc
 
 termite:	$P/termite ~/.config/termite/config
 

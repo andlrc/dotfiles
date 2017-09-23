@@ -25,7 +25,6 @@ path+=(
   "/usr/share/perl6/vendor/bin"
   "$HOME/bin"
   "$HOME/work/zipSeries/bin"
-  "$HOME/work/charinfo"
   "$DW_ROOT/bin"
   "$HOME/.gem/ruby/2.4.0/bin"
 )

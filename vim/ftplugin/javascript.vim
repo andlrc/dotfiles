@@ -7,8 +7,6 @@ let &l:define  = '^\%(' . join([
         \ '\s*function\s\+\ze\k\+'
       \ ], '\|') . '\)'
 
-setlocal includeexpr=findfile(v:fname)
-
 setlocal textwidth=100
 
 let b:match_words = '\<function\>:\<return\>,' .
@@ -18,9 +16,9 @@ let b:match_words = '\<function\>:\<return\>,' .
                   \ '\<try\>:\<catch\>:\<finally\>'
 
 setlocal makeprg=jscs\ --no-colors\ --max-errors\ -1\ --reporter\ unix\ %
-setlocal errorformat=%f:%l:%c:\ %m
+setlocal errorformat^=%f:%l:%c:\ %m
 
-setlocal tags=./js.tags,js.tags,./tags,tags,./html.tags,html.tags
+setlocal tags=js.tags,./tags,tags,html.tags
 
 " Somewhat proper section jumping {{{1
 
