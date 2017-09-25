@@ -1,14 +1,15 @@
 #!/bin/sh
 # Author: Andreas Louv <andreas@louv.dk>
 # Print a list of processes sorted by CPU usage
-ps ax -o pcpu,ucmd | awk '
-  (NR > 1) {
-    cmd[$2] += $1
-  }
-  END {
-    for(n in cmd) {
-      if (cmd[n] > 0) {
-        printf("%4.1f %s\n", cmd[n], n)
-      }
-    }
-  }' | sort -nr
+ps ax -o pcpu,ucmd |
+awk '(NR > 1) {
+       cmd[$2] += $1
+     }
+     END {
+       for(n in cmd) {
+	 if (cmd[n] > 0) {
+	   printf("%4.1f %s\n", cmd[n], n)
+         }
+       }
+     }' |
+sort -nr

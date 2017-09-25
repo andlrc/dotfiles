@@ -3,12 +3,12 @@
 
 if test "$#" -lt 1
 then
-  >&2 printf "Usage '%s +inc'\n" "${0##*/}"
-  exit 2
+	>&2 printf "Usage '%s +inc'\n" "${0##*/}"
+	exit 2
 fi
 
-readonly min=20
-readonly max=$(cat /sys/class/backlight/intel_backlight/max_brightness)
+min=20
+max=$(cat /sys/class/backlight/intel_backlight/max_brightness)
 
 inc=$1; shift
 inc=$((inc * max / 100))

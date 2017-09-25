@@ -1,34 +1,45 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Linter for widget files in vim. widgets are special as they are not valid JS.
 # But I like to lint them as JS. This can be done by wrapping the file in
 # 'var a = ...;'.
-# Usage:
-#	widgetcs jscs -x < file.txt
-#	widgetcs jscs file.txt
+# Usage:	widgetcs jscs -x < file.txt
+#		widgetcs jscs file.txt
 #
-# Author: Andreas Louv <andreas@louv.dk>
-# Version: 0.9
+# Author:	Andreas Louv <andreas@louv.dk>
+# Version:	1.0
 
-if test -t 0; then
-  cmd=$1; shift
-  args=()
-  prev=
-  for arg; do
-    if test -n "$prev"; then
-      args+=("$prev")
-    fi
-    prev=$arg
-  done
-  file=$prev
+pgm=${0##*/}
 
-  printf "var a = %s;\n" "$(cat "$file")" \
-    | "$cmd" "${args[@]}" \
-    | awk -F: -v file="$file" '{ $1 = file }; 1' OFS=:
+if test -t 0
+then
+	cmd=$1; shift
+	prev=
+	is_first=1
+	for arg
+	do
+		if test -n "$is_first"
+		then
+			set -- # Arguments
+			is_first=
+		else
+			set -- "$@" "$prev"
+		fi
+		prev=$arg
+	done
+	file=$prev
+
+	if ! test -e "$file"
+	then
+		>&2 printf "%s: '%s' No such file or directory\n" "$pgm" "$file"
+		exit 1
+	fi
+	printf "var a = %s;\n" "$(cat "$file")" |
+	"$cmd" "$@" |
+	awk -F: -v file="$file" '{ $1 = file }; 1' OFS=:
 else
-  cmd=$1; shift
-  args=("$@")
-  file=-
-  printf "var a = %s;\n" "$(cat "$file")" \
-    | "$cmd" "${args[@]}" \
-    | sed '1s/var a = //;$s/;//'
+	cmd=$1; shift
+	file=-
+	printf "var a = %s;\n" "$(cat "$file")" |
+	"$cmd" "$@" |
+	sed '1s/var a = //;$s/;//'
 fi

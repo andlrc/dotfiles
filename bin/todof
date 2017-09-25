@@ -13,18 +13,21 @@ comm='(//|#)'       # Comment regex
 
 if test $# -eq 0
 then
-  exec find . \
-    -path '*/node_modules' -prune \
-    -o -path '*/.git' -prune \
-    -o -type f -exec "$0" {} +
+	  exec find . \
+	            -path '*/node_modules' -prune -o	\
+		    -path '*/.git' -prune -o		\
+		    -type f -exec "$0" {} +
 fi
 
-awk \
-  -v todo="$todo" \
-  -v comm="$comm" \
-  'o && $1 !~ comm {o = 0}
-  $0 ~ todo { o = 1 }
-  o {
-    gsub("^[[:space:]]*"c"[[:space:]]*", "");
-    printf("%s:%d %s\n", FILENAME, FNR, $0);
-  }' "$@"
+awk -v todo="$todo" \
+    -v comm="$comm" \
+    'o && $1 !~ comm {
+	o = 0
+     }
+     $0 ~ todo {
+     	o = 1
+     }
+     o {
+	gsub("^[[:space:]]*"c"[[:space:]]*", "");
+	printf("%s:%d %s\n", FILENAME, FNR, $0);
+     }' "$@"

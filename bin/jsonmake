@@ -2,7 +2,7 @@
 
 for file
 do
-  jq . "$file" 2>&1 1> /dev/null | sed '
-  s/\(.*\) at line \([1-9][0-9]*\), column \([1-9][0-9]*\)/\2:\3:\1/
-  s~^~'"$file"':~'
+	jq . "$file" 2>&1 1> /dev/null |
+	sed 's/\(.*\) at line \([1-9][0-9]*\), column \([1-9][0-9]*\)/\2:\3:\1/
+	     s~^~'"$file"':~'
 done

@@ -7,12 +7,12 @@
 #	recws
 
 mon=$(xrandr --query |
-  sed -n '/^\([[:alnum:]-][[:alnum:]-]*\) connected.*/{s//\1/p;q}')
+      sed -n '/^\([[:alnum:]-][[:alnum:]-]*\) connected.*/{s//\1/p;q}')
 
 # Find workspaces that are not on `$mon', and move them to `$mon'
 i3-msg -t get_workspaces |
-  jq --arg mon "$mon" '.[] | select(.output != $mon) | .name' |
+jq --arg mon "$mon" '.[] | select(.output != $mon) | .name' |
 while read ws
 do
-  i3-msg "workspace $ws; move workspace to $mon"
+	i3-msg "workspace $ws; move workspace to $mon"
 done
