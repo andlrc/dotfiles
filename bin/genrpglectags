@@ -1,22 +1,17 @@
-#!/usr/bin/env bash
-# Usage:
-#	genrpglectags <project>
-#
-# Author: Andreas Louv <andreas@louv.dk>
+#!/bin/sh
+# Usage:	genrpglectags { -h | -V | { -p project | -c } }
+# Version:	0.5
+# Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
-version=0.4
+version=0.5
 usage='{ -h | -V | { -p project | -c } }'
 
 project=""
 
-shopt -s nullglob
-
-while getopts "hVcp:" opt
-do
-	case $opt in
-		h)
-			cat << HELP
+print_help()
+{
+	cat << HELP
 Usage $pgm $usage
 
   -c         Search CWD for project
@@ -25,6 +20,63 @@ Usage $pgm $usage
   -V         Show version information
   -h         Show this help and exit
 HELP
+}
+
+gen_tags()
+{
+	dir=$1; shift
+	file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
+	cd "$dir"
+	>&2 printf "Generating tags in '%s'\n" "$dir"
+
+	if ! test -e tags
+	then
+		>&2 printf "Generate all tags\n" "$project"
+		set -- # All files
+		for file in $file_globs
+		do
+			test -e "$file" || continue
+			set -- "$@" "$file"
+		done
+		rpglectags "$@" < /dev/null
+	else
+		tags_stat=$(stat -c %Y tags)
+		set -- # Modified
+		>&2 printf "Partial generation, 'stat tags' = %d\n" \
+			   "$tags_stat"
+		for file in $file_globs
+		do
+			test -e "$file" || continue
+			file_stat=$(stat -c %Y "$file")
+			if test "$file_stat" -ge "$tags_stat"
+			then
+				set -- "$@" "$file"
+				>&2 printf "%s is modified\n" "$file"
+			fi
+		done
+
+		tagstmp=$(mktemp)
+		moditmp=$(mktemp)
+		if test "$@"
+		then
+			printf "%s\n" "$@" > "$moditmp"
+			awk -F'\t' \
+			    'FILENAME != "tags" { modified[$0]++; next }
+			     !modified[$2]' \
+			     "$moditmp" tags > "$tagstmp"
+			mv "$tagstmp" tags
+			rm "$moditmp"
+
+			rpglectags -a "$@" < /dev/null
+		fi
+	fi
+}
+
+while getopts "hVcp:" opt
+do
+	case $opt in
+		h)
+			print_help
 			exit 0
 			;;
 		V)
@@ -56,52 +108,16 @@ then
 	>&2 printf "Usage '%s' %s\n" "$pgm" "$usage"
 	exit 1
 fi
-gen_tags()
-{
-	dir=$1; shift
-	file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
-	cd "$dir"
-	>&2 printf "Generating tags in '%s'\n" "$dir"
 
-	if ! test -e tags
-	then
-		>&2 printf "Generate all tags\n" "$project"
-		rpglectags $file_globs < /dev/null
-	else
-		tags_stat=$(stat -c %Y tags)
-		modified=()
-		>&2 printf "Partial generation, 'stat tags' = %d\n" \
-			   "$tags_stat"
-		for file in $file_globs
-		do
-			file_stat=$(stat -c %Y "$file")
-			if test "$file_stat" -gt "$tags_stat"
-			then
-				modified+=("$file")
-				>&2 printf "%s is modified\n" "$file"
-			fi
-		done
+set -- /mnt/dksrv206/www/Portfolio/Admin/Services	\
+       /mnt/dksrv206/www/dev/bas/shared/services
 
-		tagstmp=$(mktemp)
-		moditmp=$(mktemp)
-		if test "${modified[0]}"
-		then
-			printf "%s\n" "${modified[@]}" > "$moditmp"
-			awk -F'\t' \
-			    'FILENAME != "tags" { modified[$0]++; next }
-			     !modified[$2]' \
-			     "$moditmp" tags > "$tagstmp"
-			mv "$tagstmp" tags
-			rm "$moditmp"
+if ! test "$project" = "bas"
+then
+	set -- "$@" /mnt/dksrv206/www/dev/"$project"/customized/services
+fi
 
-			rpglectags -a "${modified[@]}" < /dev/null
-		fi
-	fi
-}
-
-for dir in /mnt/dksrv206/www/Portfolio/Admin/Services		\
-	   /mnt/dksrv206/www/dev/bas/shared/services		\
-	   /mnt/dksrv206/www/dev/"$project"/customized/services
+for dir in "$@"
 do
 	gen_tags "$dir"
 done

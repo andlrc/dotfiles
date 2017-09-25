@@ -1,61 +1,131 @@
-#!/bin/bash
-out_dir=${XDG_CACHE_HOME:-~/.cache/rpgledev}
-mkdir -p "$out_dir"
+#!/bin/sh
+# Usage:	getrpglehdr { -h | -V | [ -f -s -v ] }
+# Version:	0.2
+# Author:	Andreas Louv <andreas@louv.dk>
 
-put_head()
+pgm=${0##*/}
+version=0.2
+usage='{ -h | -V | { -v } { -s } { -f } }'
+
+verbose=
+force=
+silent=
+
+print_help()
 {
-	colred=$(tput setaf 9) # Red
-	colres=$(tput sgr0) # Reset
-	>&2 printf "${colred}Line width for '%s' is '%d'${colres}\n" \
-		   "$out_name" "$lwidth"
+	cat << HELP
+Usage $pgm $usage
+
+  -f         Fetch all files, also unchanged
+  -s         Supress information about fetched files
+  -v         Be more verbose
+
+  -V         Show version information
+  -h         Show this help and exit
+HELP
 }
 
-for mbr_file in /mnt/dksrv206/QSYS.LIB/{ICEBREAK,PORTFOLIO,*DEV}.LIB/{QASPHDR,QRPGLESRC}.FILE/*.MBR
-do
-	test -e "$mbr_file" || continue
+fetch_mbr()
+{
+	mbr_file=$1; shift
+
 	out_name="$(echo "$mbr_file" |
-		sed 's:^.*/\([^/]*/[^/]*\)$:\1:;s:\.MBR$:.rpgleinc:' |
+		sed 's:^.*/\([^/]*/[^/]*\)$:\1:
+		     s:\.MBR$:.rpgleinc:' |
 		awk '{ print tolower($0); }')"
 	out_file="$out_dir/$out_name"
 
 	# Don't fetch non changed file
-	if test -e "$out_file" &&
+	if test -z "$force" &&
+	   test -e "$out_file" &&
 	   test "$(stat -c %Y "$mbr_file")" -lt "$(stat -c %Y "$out_file")"
 	then
-		>&2 printf "Already fetched '%s'\n" "$out_name"
-		continue
+		if test -n "$verbose"
+		then
+			>&2 printf "Already fetched '%s'\n" "$out_name"
+		fi
+	else
+		# NOTE: The data is in EBCDIC and in some fixed width.
+		# Hopefully there is an an include guard:
+		# /if not defined(NAME)
+		# /define NAME
+		#
+		# This means we can calculate the length between ``if not ...''
+		# and all the way until ``/define ...''
+		lwidth=$((6 + $(awk 'NR == 2 { print; exit(0); }' \
+				     RS='@@@@@@a' \
+				    "$mbr_file" |
+				wc -c)))
+		if test "$lwidth" -ne "120"
+		then
+			lwidth=228
+		fi
+
+		mkdir -p "${out_file%/*}"
+
+		dd if="$mbr_file" \
+		   of="$out_file" \
+		   bs="$lwidth"   \
+		   cbs="$lwidth"  \
+		   conv=ascii 2> /dev/null
+
+		printf "      * Original file: '%s'\n"	\
+		       "$mbr_file" >> "$out_file"
+
+		if test -z "$silent"
+		then
+			# Show top of file to give a human a change to see the
+			# width
+			>&2 printf "Line width for '%s' is '%d'\n"	\
+				   "$out_name" "$lwidth"
+			>&2 head -5 "$out_file"
+		fi
 	fi
+}
 
-	# NOTE: The data is in EBCDIC and in some fixed width.  Hopefully there
-	# is an an include guard:
-	# /if not defined(NAME)
-	# /define NAME
-	#
-	# This means we can calculate the length between ``if not ...'' and all
-	# the way until ``/define ...''
-	lwidth=$((6 + $(awk 'NR == 2 { print; exit(0); }' \
-			    RS='@@@@@@a' \
-			    "$mbr_file" |
-			wc -c)))
-	if test "$lwidth" -ne "120"
-	then
-		lwidth=228
-	fi
+while getopts "hVfsv" opt
+do
+	case $opt in
+		h)
+			print_help
+			exit 0
+			;;
+		V)
+			printf "%s %s\n" "$pgm" "$version"
+			exit 0
+			;;
+		f)
+			force=1
+			;;
+		s)
+			silent=1
+			;;
+		v)
+			verbose=1
+			;;
+		\?)
+			>&2 printf '%s: unknown option -%s\n' "$pgm" "$OPTARG"
+			exit 1
+			;;
+	esac
+done
 
-	put_head "$out_name" "$lwidth"
+out_dir=${XDG_CACHE_HOME:-~/.cache/rpgledev}
+mkdir -p "$out_dir"
 
-	mkdir -p "${out_file%/*}"
+set -- /mnt/dksrv206/QSYS.LIB/*DEV.LIB		\
+       /mnt/dksrv206/QSYS.LIB/ICEBREAK.LIB	\
+       /mnt/dksrv206/QSYS.LIB/PORTFOLIO.LIB
 
-	dd if="$mbr_file" \
-	   of="$out_file" \
-	   bs="$lwidth"   \
-	   cbs="$lwidth"  \
-	   conv=ascii 2> /dev/null
-
-	printf "      * Original file: '%s'\n" "$mbr_file" >> "$out_file"
-
-	# Show top of file to give a human a change to see the width
-	>&2 head -5 "$out_file"
+for lib
+do
+	test -d "$lib" || continue
+	for mbr_file in "$lib"/QRPGLESRC.FILE/*MBR	\
+			"$lib"/QASPHDR.FILE/*MBR
+	do
+		test -e "$mbr_file" || continue
+		fetch_mbr "$mbr_file"
+	done
 done
 
 for dir in "$out_dir"/*.file

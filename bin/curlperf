@@ -3,9 +3,15 @@
 # Usage:
 #	curlperl <URL>
 
-curl -gs          \
-     -o /dev/null \
-     -w '%{time_connect} %{time_starttransfer} %{time_total}\n' \
+curl --globoff		\
+     --silent		\
+     --output /dev/null	\
+     --write-out '%{time_connect} %{time_starttransfer} %{time_total}\n' \
      "$@" |
-awk '{ printf("%.2fms + %.2fms = %.2fms\n", $1 * 1000, $2 * 1000, $3 * 1000) }'
+awk '{
+	printf("%.2fms + %.2fms = %.2fms\n",
+	       $1 * 1000,
+	       $2 * 1000,
+	       $3 * 1000)
+     }'
 
