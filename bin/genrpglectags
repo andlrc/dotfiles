@@ -55,10 +55,10 @@ gen_tags()
 			fi
 		done
 
-		tagstmp=$(mktemp)
-		moditmp=$(mktemp)
-		if test "$@"
+		if test "$#" -gt 0
 		then
+			tagstmp=$(mktemp)
+			moditmp=$(mktemp)
 			printf "%s\n" "$@" > "$moditmp"
 			awk -F'\t' \
 			    'FILENAME != "tags" { modified[$0]++; next }
