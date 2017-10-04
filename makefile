@@ -30,7 +30,7 @@ clean:
 wm:	i3
 
 i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu $P/dmenu \
-	$P/feh $P/redshift $P/scrot $P/xclip $P/xdotool $P/unclutter         \
+	$P/feh $P/redshift $P/scrot $P/xclip $P/xdotool $P/unclutter $P/zs   \
 	/usr/share/fonts/TTF/fontawesome-webfont.ttf                         \
 	~/.config/i3/config ~/.i3status.conf
 
@@ -76,6 +76,9 @@ $P/xdotool:
 
 $P/unclutter:|	$P/yaourt
 	yaourt -S unclutter-xfixes-git
+
+$P/zs:|	$P/yaourt
+	yaourt -S zs-git
 
 /usr/share/fonts/TTF/fontawesome-webfont.ttf:|	$P/yaourt
 	yaourt -S ttf-font-awesome
