@@ -37,12 +37,13 @@ nnoremap gb :ls<cr>:b<space>
 
 " Power <CR> {{{2
 
-cnoremap <expr> <CR> getcmdline() !~# '^[vg]/.*/#$' ? '<CR>'
-                   \ : '<CR>:call PromptAndExec(":%d\r")<CR>'
+cnoremap <expr> <CR> getcmdline() =~# '^[vg]/.*/#$'
+                   \ ? '<CR>:call <SID>PromptAndExec(":%d\r")<CR>'
+                   \ : '<CR>'
 
 " Prompt And Exec Function {{{2
 
-function! PromptAndExec(cmd)
+function! s:PromptAndExec(cmd)
   let ans = input('Type number and <Enter> (empty cancels): ')
 
   if ans !~ '^\s*$'
@@ -55,11 +56,11 @@ endfunction
 
 " Faster define and include {{{2
 
-nnoremap [I [I:call PromptAndExec(":ijump! %d \022\027\015")<CR>
-nnoremap ]I ]I:call PromptAndExec(":+1,$ijump! %d \022\027\015")<CR>
+nnoremap [I [I:call <SID>PromptAndExec(":ijump! %d \022\027\015")<CR>
+nnoremap ]I ]I:call <SID>PromptAndExec(":+1,$ijump! %d \022\027\015")<CR>
 
-nnoremap [D [D:call PromptAndExec(":djump %d \022\027\015")<CR>
-nnoremap ]D ]D:call PromptAndExec(":+1,$djump %d \022\027\015")<CR>
+nnoremap [D [D:call <SID>PromptAndExec(":djump %d \022\027\015")<CR>
+nnoremap ]D ]D:call <SID>PromptAndExec(":+1,$djump %d \022\027\015")<CR>
 
 " Enhanced % {{{2
 
