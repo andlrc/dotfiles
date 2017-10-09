@@ -22,16 +22,16 @@ clean:
 	-rm -r ~/.config/fontconfig/config
 	-rmdir ~/.config/fontconfig
 
-.PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config ctags git X \
-	termite fontconfig devel
+.PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config	\
+	ctags git X termite fontconfig devel
 
 # WM {{{
 
 wm:	i3
 
-i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu $P/dmenu \
-	$P/feh $P/redshift $P/scrot $P/xclip $P/xdotool $P/unclutter $P/zs   \
-	/usr/share/fonts/TTF/fontawesome-webfont.ttf                         \
+i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu	\
+	$P/dmenu $P/feh $P/redshift $P/scrot $P/xclip $P/xdotool 	\
+	$P/unclutter /usr/share/fonts/TTF/fontawesome-webfont.ttf	\
 	~/.config/i3/config ~/.i3status.conf
 
 ~/.config/i3/config:	$(DW)/i3/i3.cfg
@@ -76,9 +76,6 @@ $P/xdotool:
 
 $P/unclutter:|	$P/yaourt
 	yaourt -S unclutter-xfixes-git
-
-$P/zs:|	$P/yaourt
-	yaourt -S zs-git
 
 /usr/share/fonts/TTF/fontawesome-webfont.ttf:|	$P/yaourt
 	yaourt -S ttf-font-awesome
@@ -174,10 +171,10 @@ fontconfig:	~/.config/fontconfig/config
 
 # Development {{{1
 
-devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq   \
-	$P/wish $P/expect $P/dash $P/identify $P/ssh $P/openconnect       \
-	$P/pptp $P/vpnc $P/core_perl/cpan $P/jscs $P/site_perl/perlcritic \
-	$P/shellcheck
+devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq	\
+	$P/wish $P/expect $P/dash $P/identify $P/zs			\
+	$P/ssh $P/openconnect $P/pptp $P/vpnc $P/core_perl/cpan		\
+	$P/jscs $P/site_perl/perlcritic $P/shellcheck
 
 $P/firefox:
 	sudo pacman -S firefox
@@ -205,6 +202,9 @@ $P/dash:
 
 $P/identify:
 	sudo pacman -S imagemagick
+
+$P/zs:|	$P/yaourt
+	yaourt -S zs-git
 
 # Connections
 $P/ssh:

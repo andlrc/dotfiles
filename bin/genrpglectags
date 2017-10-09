@@ -86,6 +86,11 @@ do
 		c)
 			project=$(pwd |
 			sed 's=^.*/\([^/]*\)/[^/]*/services.*=\1=p;d')
+			if test -z "$project"
+			then
+				>&2 printf "%s: unknown path: '%s'\n" \
+					   "$pgm" "$PWD"
+			fi
 			;;
 		p)
 			project=$OPTARG
@@ -93,11 +98,12 @@ do
 		:)
 
 			>&2 printf '%s: expected argument for  option -%s\n' \
-			           "$opt"
+			           "$pgm" "$opt"
 			exit 1
 			;;
 		\?)
-			>&2 printf '%s: unknown option -%s\n' "$OPTARG"
+			>&2 printf '%s: unknown option -%s\n' \
+				   "$pgm" "$OPTARG"
 			exit 1
 			;;
 	esac
