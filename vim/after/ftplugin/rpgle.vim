@@ -16,7 +16,24 @@ setlocal shiftwidth=2 softtabstop=2 expandtab
 let g:rpgle_indentStart = 0
 
 setlocal suffixesadd+=.aspx,.asmx
-let &l:includeexpr = 'tolower(' . &l:includeexpr . ')'
+setlocal includeexpr=RpgleInclude(v:fname)
+
+function! RpgleInclude(fname)
+  let fname = a:fname
+  let fname = substitute(fname, '/', '.lib/', '')
+  let fname = substitute(fname, ',', '.file/', '')
+  let path = findfile(fname, &path)
+  if path != ''
+    return path
+  else
+    let path = findfile(tolower(fname), &path)
+    if path != ''
+      return path
+    endif
+  endif
+
+  return fname
+endfunction
 
 setlocal keywordprg=man\ --sections=3p,3RPG,3RPGCOMPDIR,3RPGHSPEC
 
@@ -26,12 +43,32 @@ setlocal errorformat=%f:%l:%c:%m
 " Align dcl-XX clusters
 nnoremap <silent> <localleader>s !ipcolalign 2<CR>=ip
 
-setlocal path=.,~/.cache/rpgledev/qrpglesrc.file,
-             \~/.cache/rpgledev/qasphdr.file,~/.cache/rpgledev,/mnt/dksrv206
+let path = [
+        \ '.',
+        \ '~/.cache/rpgledev'
+      \ ]
+let tags = [
+        \ './tags',
+        \ 'tags',
+        \ '/mnt/dksrv206/www/dev/bas/shared/services/tags',
+        \ '/mnt/dksrv206/www/Portfolio/Admin/services/tags'
+      \ ]
 
-setlocal tags=tags,/mnt/dksrv206/www/dev/bas/shared/services/tags,
-             \/mnt/dksrv206/www/Portfolio/Admin/Services/tags,
-             \~/.cache/rpgledev/*.file/tags
+let lib = substitute(expand('%:p'), '^/mnt/dksrv206/www/dev/\([^/]\+\)/.*', '\1', '')
+if lib != expand('%:p')
+  call add(path, '~/.cache/rpgledev/' . lib . 'dev.lib')
+  call add(path, '~/.cache/rpgledev/' . lib . 'dev.lib/*.file')
+  call add(tags, '~/.cache/rpgledev/' . lib . 'dev.lib/tags')
+endif
+
+for lib in ['basdev', 'portfolio', 'icebreak']
+  call add(path, '~/.cache/rpgledev/' . lib . '.lib')
+  call add(path, '~/.cache/rpgledev/' . lib . '.lib/*.file')
+  call add(tags, '~/.cache/rpgledev/' . lib . '.lib/tags')
+endfor
+
+exe 'setlocal path=' . join(path, ',')
+exe 'setlocal tags=' . join(tags, ',')
 
 " Match declarations but also things with ``word word'', as it must also be
 " declarations inside data structures, procedure interfaces:
