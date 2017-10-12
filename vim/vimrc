@@ -37,7 +37,7 @@ nnoremap gb :ls<cr>:b<space>
 
 " Power <CR> {{{2
 
-cnoremap <expr> <CR> getcmdline() =~# '^[vg]/.*/#$'
+cnoremap <expr> <CR> getcmdline() =~# '[vg]/.*/#$'
                    \ ? '<CR>:call <SID>PromptAndExec(":%d\r")<CR>'
                    \ : '<CR>'
 
