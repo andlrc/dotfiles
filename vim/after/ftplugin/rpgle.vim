@@ -41,7 +41,7 @@ setlocal tags=tags,/mnt/dksrv206/www/dev/bas/shared/services/tags,
 " end-ds;
 " DdataStruct       ds
 " D  key                         10I 0
-let &l:define = '^\%(.\{0,7}[dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
+let &l:define = '^.\{0,7}\%([dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
               \ '\|\s*dcl-\%(proc\|pr\|ds\|[sc]\)\s\+\ze\w\+\)'
 
 " Jump to the end of the declaration specs in the current procedure {{{1
