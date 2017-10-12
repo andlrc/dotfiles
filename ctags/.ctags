@@ -1,9 +1,6 @@
 --recurse=yes
 --exclude=.git
 --exclude=node_modules/\*
---exclude=dist/\*
---exclude=\*.min.\*
---exclude=\*.map
 --exclude=\*.bak
 
 --regex-sh=/^\s*(\w+)=/\1/v,variable/
