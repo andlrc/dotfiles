@@ -12,3 +12,5 @@
 	fetchJobs = 8
 [commit]
 	gpgsign = true
+[url "ssh://192.168.5.206/git/"]
+	insteadOf = work:
