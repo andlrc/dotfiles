@@ -85,8 +85,10 @@ set completeopt-=preview
 
 " Wrapping {{{1
 
-setglobal nowrap
-setglobal textwidth=80
+" Why can't I set "nowrap" nor "textwidth" with "setglobal",
+" "/usr/share/vim/vimfiles/archlinux.vim" doesn't set them.
+set nowrap
+set textwidth=80
 set formatoptions+=jo
 set formatoptions-=t
 
