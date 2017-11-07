@@ -35,6 +35,25 @@ nnoremap <leader>g :grep<space>
 nnoremap <leader>f :g//#<left><left>
 nnoremap gb :ls<cr>:b<space>
 
+" Use "g*" to make a more perminent highlight of a word {{{2
+
+nnoremap <silent> g* :call <SID>MatchAdd(expand("<cword>"))<cr>
+let s:MatchAdd_words = {}
+function! s:MatchAdd(word)
+  if has_key(s:MatchAdd_words, a:word)
+    try
+      call matchdelete(s:MatchAdd_words[a:word])
+      unlet s:MatchAdd_words[a:word]
+      return
+    catch /E803/
+    endtry
+  endif
+  let regex = '\<' . a:word . '\>'
+  let s:MatchAdd_words[a:word] = matchadd('SpellCap', regex)
+  let @/ = regex
+  norm! n
+endfunction
+
 " Power <CR> {{{2
 
 cnoremap <expr> <CR> getcmdline() =~# '[vg]/.*/#$'
