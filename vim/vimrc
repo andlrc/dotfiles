@@ -65,7 +65,7 @@ cnoremap <expr> <CR> getcmdline() =~# '[vg]/.*/#$'
 function! s:PromptAndExec(cmd)
   let ans = input('Type number and <Enter> (empty cancels): ')
 
-  if ans !~ '^\s*$'
+  if ans !~# '^\s*$'
     try
       silent execute 'normal! ' . printf(a:cmd, ans)
     catch /E387/ "E387: Match is on current line

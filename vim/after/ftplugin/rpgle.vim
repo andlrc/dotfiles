@@ -23,11 +23,11 @@ function! RpgleInclude(fname)
   let fname = substitute(fname, '/', '.lib/', '')
   let fname = substitute(fname, ',', '.file/', '')
   let path = findfile(fname, &path)
-  if path != ''
+  if path !=# ''
     return path
   else
     let path = findfile(tolower(fname), &path)
-    if path != ''
+    if path !=# ''
       return path
     endif
   endif
@@ -90,8 +90,8 @@ function! s:VariableDecl()
   endif
   " Move forward to first non declaration statement
   while 1
-    norm +
-    if getline('.') =~ '^\s*$'
+    norm! +
+    if getline('.') =~# '^\s*$'
       continue
     endif
     let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
