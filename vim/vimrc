@@ -23,7 +23,10 @@ set listchars+=tab:\|\
 let mapleader = "\<Space>"
 let maplocalleader = "\\"
 
-" Searching and Navigating Files {{{1
+" Searching, Navigating and Compiling Files {{{1
+
+" Update / Write and make
+command! -bang Make :exe (<bang>0 ? ':write' : ':update') . ' | :make'
 
 setglobal ignorecase smartcase hlsearch incsearch
 setglobal path^=**
