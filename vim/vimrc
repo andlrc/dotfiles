@@ -38,34 +38,9 @@ nnoremap <leader>g :grep<space>
 nnoremap <leader>f :g//#<left><left>
 nnoremap gb :ls<cr>:b<space>
 
-" Use "g*" to make a more perminent highlight of a word {{{2
-
-nnoremap <silent> g* :call <SID>MatchAdd(expand("<cword>"))<cr>
-let s:MatchAdd_words = {}
-function! s:MatchAdd(word)
-  if has_key(s:MatchAdd_words, a:word)
-    try
-      call matchdelete(s:MatchAdd_words[a:word])
-      unlet s:MatchAdd_words[a:word]
-      return
-    catch /E803/
-    endtry
-  endif
-  let regex = '\<' . a:word . '\>'
-  let s:MatchAdd_words[a:word] = matchadd('SpellCap', regex)
-  let @/ = regex
-  norm! n
-endfunction
-
-" Power <CR> {{{2
-
-cnoremap <expr> <CR> getcmdline() =~# '[vg]/.*/#$'
-                   \ ? '<CR>:call <SID>PromptAndExec(":%d\r")<CR>'
-                   \ : '<CR>'
-
 " Prompt And Exec Function {{{2
 
-function! s:PromptAndExec(cmd)
+function! s:PromptAndExec(cmd) abort
   let ans = input('Type number and <Enter> (empty cancels): ')
 
   if ans !~# '^\s*$'
@@ -134,20 +109,21 @@ nnoremap <silent> <leader>ww
 
 " Folding {{{1
 
+setglobal foldopen-=block
 " Automatic set foldmethod to manual when entering insert mode, this is done
 " to prevent vim from unfolding automatic folds, when the code changes.
 augroup LazyFolds
   autocmd!
-  autocmd InsertEnter,WinLeave * :call <SID>LazyFolds(0)
-  autocmd InsertLeave,WinEnter * :call <SID>LazyFolds(1)
+  autocmd InsertEnter,WinLeave * :call <SID>LazyFolds(1)
+  autocmd InsertLeave,WinEnter * :call <SID>LazyFolds(0)
 augroup END
 
-function! s:LazyFolds(type)
-  if a:type == 0
+function! s:LazyFolds(enter) abort
+  if a:enter
+    let &l:foldmethod = get(b:, 'lazy_foldmethod', &foldmethod)
+  else
     let b:lazy_foldmethod=&foldmethod
     setlocal foldmethod=manual
-  elseif exists('b:lazy_foldmethod')
-    let &l:foldmethod = b:lazy_foldmethod
   endif
 endfunction
 
