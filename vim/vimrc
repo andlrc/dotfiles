@@ -18,6 +18,8 @@ set dir=~/.vim/tmp/swap//
 
 set listchars+=tab:\|\ 
 
+colorscheme nofrils-dark
+
 " Leader {{{1
 
 let mapleader = "\<Space>"
@@ -126,11 +128,6 @@ function! s:LazyFolds(enter) abort
     setlocal foldmethod=manual
   endif
 endfunction
-
-" Color Fixes {{{1
-
-highlight Folded term=standout ctermfg=7 ctermbg=0
-highlight! link Conceal PreProc
 
 " FileType Detect {{{1
 

@@ -4,6 +4,6 @@
 [submodule "vim/pack/rpgle.vim/opt/rpgle.vim"]
 	path = vim/pack/plugins/start/rpgle.vim
 	url = https://github.com/andlrc/rpgle.vim
-[submodule "vim/pack/plugins/start/vim-tutor-mode"]
-	path = vim/pack/plugins/start/vim-tutor-mode
-	url = https://github.com/fmoralesc/vim-tutor-mode
+[submodule "vim/pack/plugins/start/nofrils"]
+	path = vim/pack/plugins/start/nofrils
+	url = https://github.com/robertmeta/nofrils
