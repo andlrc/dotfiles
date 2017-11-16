@@ -111,7 +111,7 @@ do
 			verbose=1
 			;;
 		\?)
-			>&2 printf '%s: unknown option -%s\n' "$pgm" "$OPTARG"
+			>&2 printf "%s: unknown option -%s\n" "$pgm" "$OPTARG"
 			exit 1
 			;;
 	esac
@@ -119,6 +119,12 @@ done
 
 out_dir=${XDG_CACHE_HOME:-~/.cache/rpgledev}
 mkdir -p "$out_dir"
+
+# Detect if we are mounted
+if ! stat /mnt/dksrv206/QSYS.LIB > /dev/null
+then
+	exit 1
+fi
 
 set -- /mnt/dksrv206/QSYS.LIB/*DEV.LIB		\
        /mnt/dksrv206/QSYS.LIB/ICEBREAK.LIB	\
@@ -139,6 +145,6 @@ done
 for dir in "$out_dir"/*.lib
 do
 	(
-		cd "$dir" && rpglectags *.file/*.rpgleinc
+		cd "$dir" && rpglectags ./*.file/*.rpgleinc
 	)
 done
