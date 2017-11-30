@@ -34,7 +34,7 @@ do
 done
 
 file_a="/tmp/$$.$(printf "%s\n" "$pp" | sed "s:/:%:g")"
-file_b="/tmp/$$.$(printf "%s\n" "$p" | sed "s:/:%/g")"
+file_b="/tmp/$$.$(printf "%s\n" "$p" | sed "s:/:%:g")"
 trap 'rm "$file_a" "$file_b" 2> /dev/null' EXIT INT
 
 if ! jq --sort-keys . -- "$pp" > "$file_a"
