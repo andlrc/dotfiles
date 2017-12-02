@@ -174,7 +174,7 @@ fontconfig:	~/.config/fontconfig/config
 devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq	\
 	$P/wish $P/expect $P/dash $P/identify $P/zs			\
 	$P/ssh $P/openconnect $P/pptp $P/vpnc $P/core_perl/cpan		\
-	$P/jscs $P/site_perl/perlcritic $P/shellcheck
+	$P/jscs $P/site_perl/perlcritic $P/shellcheck $P/pylint
 
 $P/firefox:
 	sudo pacman -S firefox
@@ -236,6 +236,9 @@ $P/site_perl/perlcritic:|	$P/core_perl/cpan
 
 $P/shellcheck:
 	sudo pacman -S shellcheck
+
+$P/pylint:
+	sudo pacman -S python-pylint
 
 $P/yaourt:
 	mkdir -p build
