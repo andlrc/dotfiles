@@ -174,7 +174,8 @@ fontconfig:	~/.config/fontconfig/config
 devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq	\
 	$P/wish $P/expect $P/dash $P/identify $P/zs			\
 	$P/ssh $P/openconnect $P/pptp $P/vpnc $P/core_perl/cpan		\
-	$P/jscs $P/site_perl/perlcritic $P/shellcheck $P/pylint
+	$P/jscs $P/site_perl/perlcritic $P/shellcheck $P/pylint		\
+	$P/errno $P/dig $P/kill
 
 $P/firefox:
 	sudo pacman -S firefox
@@ -239,6 +240,15 @@ $P/shellcheck:
 
 $P/pylint:
 	sudo pacman -S python-pylint
+
+$P/errno:
+	sudo pacman -S moreutils
+
+$P/dig:
+	sudo pacman -S bind-tools
+
+$P/kill:
+	sudo pacman -S util-linux
 
 $P/yaourt:
 	mkdir -p build
