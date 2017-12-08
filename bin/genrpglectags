@@ -1,13 +1,14 @@
 #!/bin/sh
-# Usage:	genrpglectags { -h | -V | { -p project | -c } }
-# Version:	0.5
+# Usage:	genrpglectags { -h | -V | { -p project | -c } [ -g ] }
+# Version:	0.6
 # Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
-version=0.5
-usage='{ -h | -V | { -p project | -c } }'
+version=0.6
+usage='{ -h | -V | { -p project | -c } [ -g ] }'
 
 project=""
+gen_all=0
 
 print_help()
 {
@@ -15,6 +16,7 @@ print_help()
 Usage $pgm $usage
 
   -c         Search CWD for project
+  -g         Generate the whole tags file
   -p project Specify project
 
   -V         Show version information
@@ -26,12 +28,12 @@ gen_tags()
 {
 	dir=$1; shift
 	file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
-	cd "$dir"
+	cd "$dir" || return 1
 	>&2 printf "Generating tags in '%s'\n" "$dir"
 
-	if ! test -e tags
+	if test "$gen_all" -gt 0 || ! test -e tags
 	then
-		>&2 printf "Generate all tags\n" "$project"
+		>&2 printf "Generate all tags\n"
 		set -- # All files
 		for file in $file_globs
 		do
@@ -72,7 +74,7 @@ gen_tags()
 	fi
 }
 
-while getopts "hVcp:" opt
+while getopts "hVcgp:" opt
 do
 	case $opt in
 		h)
@@ -91,6 +93,9 @@ do
 				>&2 printf "%s: unknown path: '%s'\n" \
 					   "$pgm" "$PWD"
 			fi
+			;;
+		g)
+			gen_all=1
 			;;
 		p)
 			project=$OPTARG
