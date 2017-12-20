@@ -175,7 +175,7 @@ devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq	\
 	$P/wish $P/expect $P/dash $P/identify $P/zs			\
 	$P/ssh $P/openconnect $P/pptp $P/vpnc $P/core_perl/cpan		\
 	$P/jscs $P/site_perl/perlcritic $P/shellcheck $P/pylint		\
-	$P/errno $P/dig $P/kill
+	$P/errno $P/dig $P/kill $P/pip
 
 $P/firefox:
 	sudo pacman -S firefox
@@ -249,6 +249,9 @@ $P/dig:
 
 $P/kill:
 	sudo pacman -S util-linux
+
+$P/pip:
+	sudo pacman -S python-pip
 
 $P/yaourt:
 	mkdir -p build
