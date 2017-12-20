@@ -5,7 +5,7 @@
 
 pgm=${0##*/}
 version=0.3
-usage='{ -h | -V | { -v } { -s } { -f } }'
+usage='{ -h | -V | { -f } { -q } { -s } { -v } }'
 
 verbose=
 force=
@@ -16,12 +16,13 @@ print_help()
 	cat << HELP
 Usage $pgm $usage
 
-  -f         Fetch all files, also unchanged
-  -s         Supress information about fetched files
-  -v         Be more verbose
+  -f   fetch all files, also unchanged
+  -q   include system headers (from QSYSLIB)
+  -s   supress information about fetched files
+  -v   be more verbose
 
-  -V         Show version information
-  -h         Show this help and exit
+  -V   show version information
+  -h   show this help and exit
 HELP
 }
 
@@ -90,7 +91,7 @@ fetch_mbr()
 	fi
 }
 
-while getopts "hVfsv" opt
+while getopts "hVfqsv" opt
 do
 	case $opt in
 		h)
@@ -103,6 +104,9 @@ do
 			;;
 		f)
 			force=1
+			;;
+		q)
+			qsyslib=1
 			;;
 		s)
 			silent=1
@@ -128,8 +132,12 @@ fi
 
 set -- /mnt/dksrv206/QSYS.LIB/*DEV.LIB		\
        /mnt/dksrv206/QSYS.LIB/ICEBREAK.LIB	\
-       /mnt/dksrv206/QSYS.LIB/QSYSINC.LIB	\
        /mnt/dksrv206/QSYS.LIB/PORTFOLIO.LIB
+
+if test -n "$qsyslib"
+then
+	set -- "$@" /mnt/dksrv206/QSYS.LIB/QSYSINC.LIB
+fi
 
 for lib
 do
