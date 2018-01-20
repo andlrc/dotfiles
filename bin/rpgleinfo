@@ -1,0 +1,60 @@
+#!/bin/sh
+# Usage:	rpgleinfo <file>...
+# Version:	0.2
+# Author:	Andreas Louv <andreas@louv.dk>
+# Print information about includes, binding directories and exported
+# procedures.  Useful for finding dependencies:
+# Usage:
+# 	$ rpgleinfo [OPTION]... [FILE]...
+# Usage: Find all programs that binds to a specific binding directory
+# 	$ rpgleinfo *.rpgle | grep -i 'bnddir:MY_BND_DIR'
+
+pgm=${0##*/}
+
+if test "$#" -lt 1
+then
+	>&2 printf "Usage: %s <file>...\n" "${0##*/}"
+	exit 1
+fi
+
+for file
+do
+	if ! [ -f "$file" ]
+	then
+		>&2 printf "%s: %s: No such file or directory\n" "$pgm" "$file"
+		continue
+	fi
+	{
+		sed '/^[[:space:]]*\/include[[:space:]][[:space:]]*\(.*\)/s//\1/p;d' "$file" |
+			while IFS= read -r inc
+			do
+				inc=$(printf "%s\n" "$inc" |
+					sed 's/\r//
+					     /,/!s/^/qrpglesrc,/')
+				inc_file=$(printf "%s\n" "$inc" |
+					sed 's/^.*$/\L&.rpgleinc/
+					     s/,/.file\//')
+				for lib_dir in ~/.cache/rpgledev/*.lib
+				do
+					inc_path=$lib_dir/$inc_file
+					[ -e "$inc_path" ] || continue
+					lib=$(printf "%s\n" "$lib_dir" |
+						sed 's/^.*\///')
+					printf "%s\n" "$lib/$inc"
+				done
+			done |
+			sort -u |
+			sed 's/^/includes:/'
+
+		grep -i '^[[:space:]]*\(H\|ctl-opt\).*bnddir' "$file" |
+			grep -o "'[^']*'" |
+			sort -u |
+			sed 's/'\''//g
+				s/^/bnddir:/'
+
+		grep -iE 'dcl-proc[[:space:]]+[^[:space:]]+[[:space:]]+export' "$file" |
+			awk '{print $2}' |
+			sort -u |
+			sed 's/^/exports:/'
+	} | awk -v file="$file" '{ print file ":" $0 }'
+done
