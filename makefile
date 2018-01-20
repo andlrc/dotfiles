@@ -21,9 +21,10 @@ clean:
 	-rmdir ~/.config/termite
 	-rm -r ~/.config/fontconfig/config
 	-rmdir ~/.config/fontconfig
+	-rm ~/.mailcap
 
 .PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config	\
-	ctags git X termite fontconfig devel
+	ctags git X termite fontconfig mail devel
 
 # WM {{{
 
@@ -78,7 +79,7 @@ $P/unclutter:|	$P/yaourt
 	yaourt -S unclutter-xfixes-git
 
 /usr/share/fonts/TTF/fontawesome-webfont.ttf:|	$P/yaourt
-	yaourt -S ttf-font-awesome
+	yaourt -S ttf-font-awesome-4
 
 # IRC {{{1
 
@@ -123,7 +124,7 @@ $P/ed:
 
 # Config {{{1
 
-config:	ctags git X readline termite fontconfig
+config:	ctags git X readline termite fontconfig mail
 
 ctags:	$P/ctags $P/rpglectags ~/.ctags
 
@@ -168,6 +169,14 @@ fontconfig:	~/.config/fontconfig/config
 ~/.config/fontconfig/config:	$(DW)/fontconfig/fontconfig.xml
 	mkdir -p ~/.config/fontconfig
 	ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
+
+mail:	$P/mutt ~/.mailcap
+
+~/.mailcap:	$(DW)/mail/mailcap
+	ln -s $(DW)/mail/mailcap ~/.mailcap
+
+$P/mutt:
+	sudo pacman -S mutt
 
 # Development {{{1
 
