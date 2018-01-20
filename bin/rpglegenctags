@@ -1,5 +1,5 @@
 #!/bin/sh
-# Usage:	genrpglectags { -h | -V | { -p project | -c } [ -g ] }
+# Usage:	rpglegenctags { -h | -V | { -p project | -c } [ -g ] }
 # Version:	0.6
 # Author:	Andreas Louv <andreas@louv.dk>
 

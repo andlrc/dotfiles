@@ -1,5 +1,5 @@
 #!/bin/sh
-# Usage:	getrpglehdr { -h | -V | [ -f -s -v ] }
+# Usage:	rpglegethdr { -h | -V | [ -f -s -v ] }
 # Version:	0.3
 # Author:	Andreas Louv <andreas@louv.dk>
 
