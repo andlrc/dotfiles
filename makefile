@@ -170,13 +170,23 @@ fontconfig:	~/.config/fontconfig/config
 	mkdir -p ~/.config/fontconfig
 	ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
 
-mail:	$P/mutt ~/.mailcap
+mail:	$P/mutt $P/w3m $P/urlview ~/.mailcap ~/.mutt/muttrc
 
 ~/.mailcap:	$(DW)/mail/mailcap
 	ln -s $(DW)/mail/mailcap ~/.mailcap
 
+~/.mutt/muttrc:
+	mkdir -p ~/.mutt
+	ln -s $(DW)/mail/muttrc ~/.mutt/muttrc
+
 $P/mutt:
 	sudo pacman -S mutt
+
+$P/w3m:
+	sudo pacman -S w3m
+
+$P/urlview:|	$P/yaourt
+	yaourt -S urlview
 
 # Development {{{1
 

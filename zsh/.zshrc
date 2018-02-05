@@ -3,7 +3,7 @@
 
 # Basic Settings {{{1
 
-export CDPATH="$HOME/work"
+CDPATH="$HOME/work"
 
 setopt auto_pushd pushd_ignore_dups pushdminus
 
@@ -25,14 +25,16 @@ bindkey -e
 # <C-Z> will call 'fg' when no process is running in the foreground {{{2
 
 toggle-ctrl-z () {
-  if [ "${#BUFFER}" -eq 0 ]; then
-    if [ "$(jobs | wc -l)" -gt 0 ]; then
-      fg
-      zle accept-line
-    fi
-  else
-    zle push-input
-  fi
+	if [ "${#BUFFER}" -eq 0 ]
+	then
+		if [ "$(jobs | wc -l)" -gt 0 ]
+		then
+			fg
+			zle accept-line
+		fi
+	else
+		zle push-input
+	fi
 }
 zle -N toggle-ctrl-z
 bindkey '^Z' toggle-ctrl-z
@@ -45,16 +47,41 @@ bindkey '^X^E' edit-command-line
 
 # Pre command and PS1, PS2, right PS1 {{{1
 
+mailnag()
+{
+	mail_cnt=$(find ~/mail/new -maxdepth 1 -mindepth 1 -printf '\n' | wc -l)
+	if [ "$mail_cnt" -gt 0 ]
+	then
+		printf "You got mail! (%d)\n" "$mail_cnt"
+		return 0
+	fi
+	return 1
+}
+
 precmd () {
-  # List most recent changed files when changing directory
-  if [ ! "$_OLDDIR" = "$PWD" ]; then
-    ls --color=always -lAht | sed '1d;7q'
-  fi
+	# List most recent changed files when changing the cwd
+	if ! [ "$_OLDDIR" = "$PWD" ]
+	then
+		ls --color=always -lAht | sed '1d;7q'
+	fi
 
-  _OLDDIR="$PWD"
+	# Set terminal title to current directory
+	print -Pn "\e]2;%d\a"
 
-  # Set terminal title to current directory
-  print -Pn "\e]2;%d\a"
+	# Show mail information
+	if ! [ "$_OLDDIR" = "$PWD" ]
+	then
+		mailnag
+		mailnagcnt=0
+	elif [ "$mailnagcnt" -lt 2 ]
+	then
+		if mailnag
+		then
+			mailnagcnt=$((mailnagcnt + 1))
+		fi
+	fi
+
+	_OLDDIR="$PWD"
 }
 
 declare -x PROMPT="%~ "
@@ -123,23 +150,25 @@ alias grep="grep --color=auto --exclude-dir=.git"
 # Function and includes {{{1
 
 work() {
-  export CDPATH="$CDPATH${CDPATH:+:}/mnt/dksrv206/www/dev"
+	CDPATH="$CDPATH${CDPATH:+:}/mnt/dksrv206/www/dev"
 }
 
 u() {
-  export PATH="$PATH"
+	PATH="$PATH"
 }
 
 d() {
-  date +'Week %W, %a %F, %T'
+	date +'Week %W, %a %F, %T'
 }
 
 export SITEMULE_CTAGS=1
 
-if [ -f "$HOME/work/Sitemule/util/.zshrc" ]; then
-  source "$HOME/work/Sitemule/util/.zshrc"
+if [ -f "$HOME/work/Sitemule/util/.zshrc" ]
+then
+	source "$HOME/work/Sitemule/util/.zshrc"
 fi
 
-if [ -f "$HOME/work/extensions/util/.zshrc" ]; then
-  source "$HOME/work/extensions/util/.zshrc"
+if [ -f "$HOME/work/extensions/util/.zshrc" ]
+then
+	source "$HOME/work/extensions/util/.zshrc"
 fi

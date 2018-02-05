@@ -17,6 +17,7 @@ let g:rpgle_indentStart = 0
 
 setlocal suffixesadd+=.aspx,.asmx
 setlocal includeexpr=RpgleInclude(v:fname)
+setlocal equalprg=rpglefmt\ -Idrupp
 
 function! RpgleInclude(fname)
   let fname = a:fname
@@ -40,19 +41,10 @@ setlocal keywordprg=man\ --sections=3,3RPG,3RPGCOMPDIR,3RPGHSPEC
 setlocal makeprg=rpglemake\ %:p
 setlocal errorformat=%f:%l:%c:%m
 
-" Align dcl-XX clusters
-nnoremap <silent> <localleader>s !ipcolalign 2<CR>=ip
-
-let path = [
-        \ '.',
-        \ '~/.cache/rpgledev'
-      \ ]
-let tags = [
-        \ './tags',
-        \ 'tags',
+let path = [ '.', '~/.cache/rpgledev' ]
+let tags = [ './tags', 'tags',
         \ '/mnt/dksrv206/www/dev/bas/shared/services/tags',
-        \ '/mnt/dksrv206/www/Portfolio/Admin/services/tags'
-      \ ]
+        \ '/mnt/dksrv206/www/Portfolio/Admin/services/tags' ]
 
 let lib = substitute(expand('%:p'), '^/mnt/dksrv206/www/dev/\([^/]\+\)/.*', '\1', '')
 if lib != expand('%:p')
@@ -80,30 +72,5 @@ exe 'setlocal tags=' . join(tags, ',')
 " D  key                         10I 0
 let &l:define = '^.\{0,7}\%([dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
               \ '\|\s*dcl-\%(proc\|pr\|ds\|[sc]\)\s\+\ze\w\+\)'
-
-" Jump to the end of the declaration specs in the current procedure {{{1
-
-function! s:VariableDecl()
-  mark `
-  if getline('.') !~? '^\s*dcl-proc\>'
-    norm [[
-  endif
-  " Move forward to first non declaration statement
-  while 1
-    norm! +
-    if getline('.') =~# '^\s*$'
-      continue
-    endif
-    let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
-    if syn_name !~# '^\%(rpgleDcl\|rpgleComment\)' ||
-     \ syn_name =~# '^\%(rpgleDclProcBody\)'
-      break
-    endif
-  endwhile
-  " Move back skipping blank links leaving the cursor on the last line
-  " containing a declaration statement.
-  exe prevnonblank(line('.') - 1)
-endfunction
-nnoremap <silent> <buffer> vd :call <SID>VariableDecl()<CR>
 
 " vim: fdm=marker fdl=0

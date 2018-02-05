@@ -15,7 +15,7 @@ syntax region  rpgleString matchgroup=Label
                          \ end=/<%/
                          \ contains=@Spell
 
-syntax match   rpgleCommentQuoted /`\@1<!``.\{-}'''\@1!/
-syntax cluster rpgleCommentProps  add=rpgleCommentQuoted
+syntax match   rpgleCommentQuoted    /".\{-}"/
+syntax cluster rpgleCommentProps     add=rpgleCommentQuoted
 
 highlight link rpgleCommentQuoted rpgleSpecial
