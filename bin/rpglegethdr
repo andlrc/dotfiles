@@ -1,11 +1,11 @@
 #!/bin/sh
-# Usage:	rpglegethdr { -h | -V | [ -f -s -v ] }
-# Version:	0.3
+# Usage:	rpglegethdr -[fqsvVh] [LIBRARY]...
+# Version:	0.4
 # Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
 version=0.3
-usage='{ -h | -V | { -f } { -q } { -s } { -v } }'
+usage='-[fqsvVh] [LIBRARY]...'
 
 verbose=
 force=
@@ -130,9 +130,20 @@ then
 	exit 1
 fi
 
-set -- /mnt/dksrv206/QSYS.LIB/*DEV.LIB		\
-       /mnt/dksrv206/QSYS.LIB/ICEBREAK.LIB	\
-       /mnt/dksrv206/QSYS.LIB/PORTFOLIO.LIB
+# If libraries are specified then only use them
+if test "$#" -gt 0
+then
+	libl=$*
+	set --
+	for lib in $libl
+	do
+		set -- "$@" /mnt/dksrv206/QSYS.LIB/"$lib".LIB
+	done
+else
+	set -- /mnt/dksrv206/QSYS.LIB/*DEV.LIB		\
+	       /mnt/dksrv206/QSYS.LIB/ICEBREAK.LIB	\
+	       /mnt/dksrv206/QSYS.LIB/PORTFOLIO.LIB
+fi
 
 if test -n "$qsyslib"
 then
