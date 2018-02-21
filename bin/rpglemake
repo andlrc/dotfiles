@@ -6,30 +6,10 @@
 # Version: 0.7
 
 path=$1; shift
-if test "$1" = "debug"
-then
-	debuglvl=0; shift
-else
-	debuglvl=20
-fi
+path=$(realpath "$path") # GNU
 
-stmt=${path#/mnt/dksrv206}
-namespace=$(printf '%s\n' "$path" |
-  sed -n 's=^.*/\([^/]*\)/[^/]*/services/.*$=\1=p' |
-  tr '[:lower:]' '[:upper:]')
+filename=${path##*/}
+project=$(printf '%s\n' "$path" |
+	awk -F/ '{ print $(NF-1) }')
 
-if test -z "$stmt" || test -z "$namespace"
-then
-  >&2 printf 'Usage: %s <file> [<debuglvl>]\n' "${0##*/}"
-  exit
-fi
-
-set -x
-curl 2> /dev/null                       \
-	--data 'namespace='"$namespace" \
-	--data 'debuglevel='"$debuglvl" \
-	--data 'stmf='"$stmt"           \
-	'http://192.168.5.206:60601/andCmp.aspx' |
-tr -d '\r' |
-# Change path to local path
-sed 's=^[^:]*:='"$path":'='
+ssh dksrv206 "./compile/do '$project' '$filename'" < "$path"
