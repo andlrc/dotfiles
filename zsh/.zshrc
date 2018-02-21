@@ -73,7 +73,7 @@ precmd () {
 	then
 		mailnag
 		mailnagcnt=0
-	elif [ "$mailnagcnt" -lt 2 ]
+	elif [ "$mailnagcnt" -lt 1 ] # 2 nags
 	then
 		if mailnag
 		then
