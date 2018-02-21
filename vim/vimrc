@@ -18,6 +18,10 @@ set dir=~/.vim/tmp/swap//
 
 set listchars+=tab:\|\ 
 
+augroup ColorChg
+  au!
+  au ColorScheme nofrils-dark hi ibTplString term=italic cterm=italic gui=italic
+augroup END
 colorscheme nofrils-dark
 
 " Leader {{{1
