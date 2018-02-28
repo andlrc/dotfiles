@@ -22,6 +22,7 @@ augroup ColorChg
   au!
   au ColorScheme nofrils-dark hi ibTplString term=italic cterm=italic gui=italic
 augroup END
+let g:nofrils_heavylinenumbers = 1
 colorscheme nofrils-dark
 
 " Leader {{{1
@@ -40,9 +41,8 @@ setglobal grepprg=grep\ -nH\ --exclude='*.o'\ --exclude='*.tags'
                      \\ --exclude='tags'\ --exclude-dir=node_modules
                      \\ --exclude-dir=.git\ $*
 
-nnoremap <leader>g :grep<space>
-nnoremap <leader>f :g//#<left><left>
 nnoremap gb :ls<cr>:b<space>
+nnoremap g/ :g//#<left><left>
 
 " Prompt And Exec Function {{{2
 
