@@ -170,7 +170,7 @@ fontconfig:	~/.config/fontconfig/config
 	mkdir -p ~/.config/fontconfig
 	ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
 
-mail:	$P/mutt $P/w3m $P/urlview ~/.mailcap ~/.mutt/muttrc
+mail:	$P/mutt $P/w3m $P/urlview $P/epdfview ~/.mailcap ~/.mutt/muttrc
 
 ~/.mailcap:	$(DW)/mail/mailcap
 	ln -s $(DW)/mail/mailcap ~/.mailcap
@@ -187,6 +187,9 @@ $P/w3m:
 
 $P/urlview:|	$P/yaourt
 	yaourt -S urlview
+
+$P/epdfview:
+	sudo pacman -S epdfview
 
 # Development {{{1
 
