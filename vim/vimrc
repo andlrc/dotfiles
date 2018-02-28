@@ -73,10 +73,6 @@ packadd! matchit
 
 set spellfile=~/.vim/spell.utf-8.add
 
-" zg will add <cword> to the custom spell file, sort that file after adding
-nnoremap zg zg:silent ! sort ~/.vim/spell.utf-8.add -o
-                           \ ~/.vim/spell.utf-8.add<cr>:redraw!<cr>
-
 " Completion {{{1
 
 set wildmenu
