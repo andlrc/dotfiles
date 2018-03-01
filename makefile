@@ -17,14 +17,12 @@ clean:
 	-rm -r ~/.xinitrc
 	-rm -r ~/.inputrc
 	-rm -r ~/.xmodmap
-	-rm -r ~/.config/termite/config
-	-rmdir ~/.config/termite
 	-rm -r ~/.config/fontconfig/config
 	-rmdir ~/.config/fontconfig
 	-rm ~/.mailcap
 
 .PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config	\
-	ctags git X termite fontconfig mail devel
+	ctags git X fontconfig mail devel
 
 # WM {{{
 
@@ -33,14 +31,14 @@ wm:	i3
 i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu	\
 	$P/dmenu $P/feh $P/redshift $P/scrot $P/xclip $P/xdotool 	\
 	$P/unclutter /usr/share/fonts/TTF/fontawesome-webfont.ttf	\
-	~/.config/i3/config ~/.i3status.conf
+	~/.config/i3/config ~/.i3status.conf /usr/share/fonts/noto
 
 ~/.config/i3/config:	$(DW)/i3/i3.cfg
 	mkdir -p ~/.config/i3
-	ln -s $(DW)/i3/i3.cfg ~/.config/i3/config
+	ln -s $< $@
 
 ~/.i3status.conf:	$(DW)/i3/i3status.cfg
-	ln -s $(DW)/i3/i3status.cfg ~/.i3status.conf
+	ln -s $< $@
 
 $P/i3:
 	sudo pacman -S i3-wm
@@ -81,6 +79,9 @@ $P/unclutter:|	$P/yaourt
 /usr/share/fonts/TTF/fontawesome-webfont.ttf:|	$P/yaourt
 	yaourt -S ttf-font-awesome-4
 
+/usr/share/fonts/noto:
+	sudo pacman -S noto-fonts
+
 # IRC {{{1
 
 irc:	irssi
@@ -97,10 +98,10 @@ shell:	zsh
 zsh:	$P/zsh ~/.zshrc ~/.zprofile
 
 ~/.zshrc:	$(DW)/zsh/.zshrc
-	ln -s $(DW)/zsh/.zshrc ~/.zshrc
+	ln -s $< $@
 
 ~/.zprofile:	$(DW)/zsh/.zprofile
-	ln -s $(DW)/zsh/.zprofile ~/.zprofile
+	ln -s $< $@
 
 $P/zsh:
 	sudo pacman -S zsh
@@ -112,7 +113,7 @@ editor:	vim ed
 vim:	~/.vim $P/gvim ctags
 
 ~/.vim:	$(DW)/vim
-	ln -s $(DW)/vim ~/.vim
+	ln -s $< $@
 
 $P/gvim:
 	sudo pacman -S gvim
@@ -124,12 +125,12 @@ $P/ed:
 
 # Config {{{1
 
-config:	ctags git X readline termite fontconfig mail
+config:	ctags git X readline fontconfig mail
 
 ctags:	$P/ctags $P/rpglectags ~/.ctags
 
 ~/.ctags:	$(DW)/ctags/.ctags
-	ln -s $(DW)/ctags/.ctags ~/.ctags
+	ln -s $< $@
 
 $P/ctags:|	$P/yaourt
 	yaourt -S universal-ctags-git
@@ -140,44 +141,38 @@ $P/rpglectags:|	$P/yaourt
 git:	~/.gitconfig
 
 ~/.gitconfig:	$(DW)/git/.gitconfig
-	ln -s $(DW)/git/.gitconfig ~/.gitconfig
+	ln -s $< $@
 
-X:	~/.xinitrc ~/.xmodmap
+X:	~/.xinitrc ~/.xmodmap ~/.Xresources
 
 ~/.xinitrc:	$(DW)/X/.xinitrc
-	ln -s $(DW)/X/.xinitrc ~/.xinitrc
+	ln -s $< $@
 
 ~/.xmodmap:	$(DW)/X/.xmodmap
-	ln -s $(DW)/X/.xmodmap ~/.xmodmap
+	ln -s $< $@
+
+~/.Xresources:	$(DW)/X/.Xresources
+	ln -s $< $@
 
 readline: ~/.inputrc
 
 ~/.inputrc:	$(DW)/readline/.inputrc
-	ln -s $(DW)/readline/.inputrc ~/.inputrc
-
-termite:	$P/termite ~/.config/termite/config
-
-~/.config/termite/config:	$(DW)/termite/termite.cfg
-	mkdir -p ~/.config/termite
-	ln -s $(DW)/termite/termite.cfg ~/.config/termite/config
-
-$P/termite:
-	sudo pacman -S termite
+	ln -s $< $@
 
 fontconfig:	~/.config/fontconfig/config
 
 ~/.config/fontconfig/config:	$(DW)/fontconfig/fontconfig.xml
 	mkdir -p ~/.config/fontconfig
-	ln -s $(DW)/fontconfig/fontconfig.xml ~/.config/fontconfig/config
+	ln -s $< $@
 
 mail:	$P/mutt $P/w3m $P/urlview $P/epdfview ~/.mailcap ~/.mutt/muttrc
 
 ~/.mailcap:	$(DW)/mail/mailcap
-	ln -s $(DW)/mail/mailcap ~/.mailcap
+	ln -s $< $@
 
 ~/.mutt/muttrc:
 	mkdir -p ~/.mutt
-	ln -s $(DW)/mail/muttrc ~/.mutt/muttrc
+	ln -s $< $@
 
 $P/mutt:
 	sudo pacman -S mutt

@@ -1,0 +1,4 @@
+xterm*faceName:		x:fixed,xft:Noto Mono
+xterm*faceSize:		11
+xterm*background:	#262626
+xterm*foreground:	#eeeeee

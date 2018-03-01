@@ -5,12 +5,8 @@
 
 export DW_ROOT="$HOME/work/dw"
 
-# i3-terminal, needs to be at the top before startx is called, otherwide the
-#   terminal will not explicit be set to termite
-export TERMINAL=termite
-
 # Default Editor
-export VISUAL=vim
+export VISUAL=ed
 export EDITOR="$VISUAL"
 
 export LC_ALL=en_US.UTF-8
