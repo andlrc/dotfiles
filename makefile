@@ -170,7 +170,7 @@ mail:	$P/mutt $P/w3m $P/urlview $P/epdfview ~/.mailcap ~/.mutt/muttrc
 ~/.mailcap:	$(DW)/mail/mailcap
 	ln -s $< $@
 
-~/.mutt/muttrc:
+~/.mutt/muttrc:	$(DW)/mail/muttrc
 	mkdir -p ~/.mutt
 	ln -s $< $@
 

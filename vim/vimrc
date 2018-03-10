@@ -12,6 +12,7 @@ set hidden
 set visualbell belloff=wildmode
 set backspace=indent,eol,start
 set nrformats-=octal
+set title
 
 set undofile undodir=~/.vim/tmp/undo//
 set dir=~/.vim/tmp/swap//
