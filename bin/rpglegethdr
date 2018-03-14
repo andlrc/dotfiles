@@ -77,8 +77,7 @@ fetch_mbr()
 		   cbs="$lwidth"  \
 		   conv=ascii 2> /dev/null
 
-		printf "      * Original file: '%s'\n"	\
-		       "$mbr_file" >> "$out_file"
+		printf "// Original file: '%s'\n" "$mbr_file" >> "$out_file"
 
 		if test -z "$silent"
 		then
@@ -154,7 +153,8 @@ for lib
 do
 	test -d "$lib" || continue
 	for mbr_file in "$lib"/QRPGLESRC.FILE/*MBR	\
-			"$lib"/QASPHDR.FILE/*MBR
+			"$lib"/QASPHDR.FILE/*MBR	\
+			"$lib"/QRPGHDR.FILE/*MBR
 	do
 		test -e "$mbr_file" || continue
 		fetch_mbr "$mbr_file"
