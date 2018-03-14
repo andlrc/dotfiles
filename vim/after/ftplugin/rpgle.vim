@@ -36,7 +36,7 @@ function! RpgleInclude(fname)
   return fname
 endfunction
 
-setlocal keywordprg=man\ --sections=3,3RPG,3RPGCOMPDIR,3RPGHSPEC
+setlocal keywordprg=man\ -S3,3RPG,3RPGCOMPDIR,3RPGHSPEC
 
 setlocal makeprg=rpglemake\ %:p
 setlocal errorformat=%f:%l:%c:%m
