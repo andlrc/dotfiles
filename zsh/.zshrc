@@ -48,6 +48,10 @@ bindkey '^X^E' edit-command-line
 
 precmd()
 {
+	# set terminal title
+	print -Pn "\e]2;%d\a"
+
+	# mail
 	if find ~/mail/new -mindepth 1 | read
 	then
 		printf "You have mail.\n"
