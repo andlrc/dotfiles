@@ -17,6 +17,7 @@ id=$(xinput list |
 	     }')
 test -n "$id" && xinput disable "$id"
 
+xrdb ~/.Xresources
 xmodmap ~/.xmodmap
 
 exec ssh-agent i3 > /tmp/i3-log 2>&1

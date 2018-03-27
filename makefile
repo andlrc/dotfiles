@@ -6,23 +6,23 @@ DW	= $(shell git rev-parse --show-toplevel)
 all:	wm shell editor config devel
 
 clean:
-	-rm -r ~/.config/i3/config
+	-rm ~/.config/i3/config
 	-rmdir ~/.config/i3
-	-rm -r ~/.i3status.conf
-	-rm -r ~/.zshrc
-	-rm -r ~/.zprofile
-	-rm -r ~/.vim
-	-rm -r ~/.ctags
-	-rm -r ~/.gitconfig
-	-rm -r ~/.xinitrc
-	-rm -r ~/.inputrc
-	-rm -r ~/.xmodmap
-	-rm -r ~/.config/fontconfig/config
+	-rm ~/.i3status.conf
+	-rm ~/.zshrc
+	-rm ~/.zprofile
+	-rm ~/.vim
+	-rm ~/.ctags
+	-rm ~/.gitconfig
+	-rm ~/.xinitrc
+	-rm ~/.inputrc
+	-rm ~/.xmodmap
+	-rm ~/.config/fontconfig/config
 	-rmdir ~/.config/fontconfig
 	-rm ~/.mailcap
 
-.PHONY:	all clean wm i3 irc irssi shell zsh editor vim ed config	\
-	ctags git X fontconfig mail devel
+.PHONY:	all clean wm i3 irc irssi shell zsh editor vim config ctags	\
+	git X fontconfig mail devel
 
 # WM {{{
 
@@ -108,17 +108,15 @@ $P/zsh:
 
 # Editor {{{1
 
-editor:	vim ed
+editor:	vim $P/ed
 
-vim:	~/.vim $P/gvim ctags
+vim:	$P/gvim ~/.vim ctags
 
 ~/.vim:	$(DW)/vim
 	ln -s $< $@
 
 $P/gvim:
 	sudo pacman -S gvim
-
-ed:	$P/ed
 
 $P/ed:
 	sudo pacman -S ed
@@ -192,7 +190,7 @@ devel:	editor shell config $P/firefox $P/chromium $P/node $P/npm $P/jq	\
 	$P/wish $P/expect $P/dash $P/identify $P/zs			\
 	$P/ssh $P/openconnect $P/pptp $P/vpnc $P/core_perl/cpan		\
 	$P/jscs $P/site_perl/perlcritic $P/shellcheck $P/pylint		\
-	$P/errno $P/dig $P/kill $P/pip
+	$P/errno $P/dig $P/kill $P/pip $P/units
 
 $P/firefox:
 	sudo pacman -S firefox
@@ -269,6 +267,9 @@ $P/kill:
 
 $P/pip:
 	sudo pacman -S python-pip
+
+$P/units:
+	sudo pacman -S units
 
 $P/yaourt:
 	mkdir -p build

@@ -1,16 +1,15 @@
 [user]
 	name = Andreas Louv
 	email = andreas@louv.dk
-	signingkey = 14838A6A
 [push]
 	default = simple
 	recurseSubmodules = check
 [diff]
 	tool = vimdiff
 	compactionHeuristic = true
+[color]
+	ui = false
 [submodule]
 	fetchJobs = 8
-[commit]
-	gpgsign = true
 [url "ssh://192.168.5.206/git/"]
 	insteadOf = work:
