@@ -124,7 +124,7 @@ do
 	esac
 done
 
-out_dir=${XDG_CACHE_HOME:-~/.cache/rpgledev}
+out_dir=${XDG_CACHE_HOME:-~/.cache}/rpgledev
 mkdir -p "$out_dir"
 
 # Detect if we are mounted
