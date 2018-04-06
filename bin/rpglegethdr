@@ -103,15 +103,19 @@ do
 			;;
 		f)
 			force=1
+			shift
 			;;
 		q)
 			qsyslib=1
+			shift
 			;;
 		s)
 			silent=1
+			shift
 			;;
 		v)
 			verbose=1
+			shift
 			;;
 		\?)
 			>&2 printf "%s: unknown option -%s\n" "$pgm" "$OPTARG"
