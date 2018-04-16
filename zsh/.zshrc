@@ -15,7 +15,7 @@ HISTFILE="$HOME/.zsh_history"
 # prompt
 bindkey -e
 WORDCHARS=@
-PROMPT="$ "
+PROMPT="%~ $ "
 PROMPT2="> "
 
 # completion

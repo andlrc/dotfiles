@@ -7,6 +7,3 @@
 [submodule "vim/pack/plugins/start/nofrils"]
 	path = vim/pack/plugins/start/nofrils
 	url = https://github.com/robertmeta/nofrils
-[submodule "vim/pack/plugins/start/vim-qlist"]
-	path = vim/pack/plugins/start/vim-qlist
-	url = https://github.com/romainl/vim-qlist
