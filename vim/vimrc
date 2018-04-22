@@ -110,11 +110,10 @@ endfunction
 
 augroup FT_Detect
   autocmd!
-  autocmd BufNewFile,BufRead *.widget setlocal filetype=javascript.widget
   autocmd BufNewFile,BufRead *.{xjson,xpd,ns,dmd,lib} setlocal filetype=json
-  autocmd BufNewFile,BufRead *.tpl setlocal filetype=html
   autocmd BufNewFile,BufRead *.as[pm]x setlocal filetype=rpgle
   autocmd BufNewFile,BufRead *.qdmd setlocal filetype=qdmd
+  autocmd BufNewFile,BufRead *.ts setlocal filetype=javascript.typescript
 augroup END
 
 " UndotreeToggle {{{1
