@@ -7,12 +7,12 @@ filetype plugin indent on
 syntax enable
 set synmaxcol=200
 
-set history=1000
+set history=10000
 set hidden
 set visualbell belloff=wildmode
 set backspace=indent,eol,start
 set nrformats-=octal
-set title
+set notitle
 
 set undofile undodir^=~/.vim/tmp/undo//
 set directory^=~/.vim/tmp/swap//

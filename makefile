@@ -31,7 +31,8 @@ wm:	i3
 i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu	\
 	$P/dmenu $P/feh $P/redshift $P/scrot $P/xclip $P/xdotool 	\
 	$P/unclutter /usr/share/fonts/TTF/fontawesome-webfont.ttf	\
-	~/.config/i3/config ~/.i3status.conf /usr/share/fonts/noto
+	~/.config/i3/config ~/.i3status.conf /usr/share/fonts/noto	\
+	$P/pulseaudio
 
 ~/.config/i3/config:	$(DW)/i3/i3.cfg
 	mkdir -p ~/.config/i3
@@ -81,6 +82,9 @@ $P/unclutter:|	$P/yaourt
 
 /usr/share/fonts/noto:
 	sudo pacman -S noto-fonts
+
+$P/pulseaudio:
+	sudo pacman -S pulseaudio
 
 # IRC {{{1
 
