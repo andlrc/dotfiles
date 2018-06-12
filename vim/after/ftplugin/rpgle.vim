@@ -1,15 +1,3 @@
-" Now that IceBreak supports ``**FREE'' we can use wider size in those files
-" having the compilation flag:
-function! s:GetTW()
-  let line = getline(1)
-  if line =~? 'free="\*YES"' || line =~# '^\*\*FREE\s*$'
-    return 80
-  else
-    return 73 " 80 - 7 columns that IceBreak adds when compiling
-  endif
-endfunction
-let &l:textwidth = s:GetTW()
-
 setlocal shiftwidth=2 softtabstop=2 expandtab
 
 " IceBreak's precompiler add the seven columns in the front
@@ -32,7 +20,6 @@ function! RpgleInclude(fname)
       return path
     endif
   endif
-
   return fname
 endfunction
 
@@ -74,5 +61,3 @@ exe 'setlocal tags=' . join(tags, ',')
 " D  key                         10I 0
 let &l:define = '^.\{0,7}\%([dD]\s*\ze\w\+\%(\s\+\w\+\|\s\+\*\|\.\.\.\)' .
               \ '\|\s*dcl-\%(proc\|pr\|ds\|[sc]\)\s\+\ze\w\+\)'
-
-" vim: fdm=marker fdl=0
