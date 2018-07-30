@@ -22,6 +22,11 @@ set listchars+=tab:\|\
 augroup ColorChg
   au!
   au ColorScheme nofrils-dark hi ibTplString term=italic cterm=italic gui=italic
+  au ColorScheme nofrils-dark hi link User1 StatusLineTermNC
+  au ColorScheme nofrils-dark hi link User2 PmenuSel
+
+  command! -nargs=1 Hi1 :call matchadd('User1', <q-args>)
+  command! -nargs=1 Hi2 :call matchadd('User2', <q-args>)
 augroup END
 let g:nofrils_heavylinenumbers = 1
 colorscheme nofrils-dark
