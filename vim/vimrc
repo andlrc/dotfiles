@@ -39,10 +39,10 @@ let maplocalleader = "\\"
 " Searching, Navigating and Compiling Files {{{1
 
 setglobal ignorecase smartcase hlsearch incsearch
-setglobal path^=**
-setglobal grepprg=grep\ -nH\ --exclude='*.o'\ --exclude='*.tags'
-                     \\ --exclude='tags'\ --exclude-dir=node_modules
-                     \\ --exclude-dir=.git\ $*
+setglobal path+=**
+setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags}
+                     \\ --exclude-dir={node_modules,.git}
+                     \\ $*
 
 nnoremap gb :ls<cr>:b<space>
 nnoremap g/ :g//#<left><left>

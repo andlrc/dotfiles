@@ -2,6 +2,8 @@
 setlocal errorformat+=%f:%l.%v-%m
 setlocal keywordprg=man\ -S2:3:3p
 
+setlocal smarttab shiftwidth=4
+
 " Change between header and source
 nnoremap <buffer> <expr> <localleader>a ':e ' . findfile(expand('%:t:r') .
       \ (expand('%:e') =~? 'c' ? '.h' : '.c'), &path) . '<CR>'
