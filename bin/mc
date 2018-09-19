@@ -1,14 +1,7 @@
 #!/bin/sh
 # Author: Andreas Louv <andreas@louv.dk>
 # This program show a list of my connections, wireless, ethernet, ...
-# This is in no way an attempt to substitute 'ip addr show' but rater a shorter
-# command name to show the same.
 
-ip addr show |
-	  awk '/^[[:digit:]]/ { iface[++l] = $2; next }
-	       $1 == "inet"   { ip[l] = $2; next }
-	       END            { for (i = 1; i <= l; i++ ) {
-				  sub(":$", "", iface[i]);
-				  sub("/.*", "", ip[i]);
-				  if (ip[i])
-				    print iface[i], ip[i] } }'
+ifconfig |
+	awk '/^[a-z0-9]+:/ { a = $1 }; /inet / { print a, $2 }' |
+	column -t -s:
