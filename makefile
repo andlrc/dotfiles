@@ -16,6 +16,7 @@ clean:
 	-rm ~/.gitconfig
 	-rm ~/.xinitrc
 	-rm ~/.inputrc
+	-rm ~/.indent.pro
 	-rm ~/.xmodmap
 	-rm ~/.config/fontconfig/config
 	-rmdir ~/.config/fontconfig
@@ -127,7 +128,7 @@ $P/ed:
 
 # Config {{{1
 
-config:	ctags git X readline fontconfig mail
+config:	ctags git X readline ~/.indent.pro fontconfig mail
 
 ctags:	$P/ctags $P/rpglectags ~/.ctags
 
@@ -159,6 +160,9 @@ X:	~/.xinitrc ~/.xmodmap ~/.Xresources
 readline: ~/.inputrc
 
 ~/.inputrc:	$(DW)/readline/.inputrc
+	ln -s $< $@
+
+~/.indent.pro:	$(DW)/.indent.pro
 	ln -s $< $@
 
 fontconfig:	~/.config/fontconfig/config
