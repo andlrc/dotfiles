@@ -7,6 +7,8 @@ setlocal suffixesadd+=.aspx,.asmx
 setlocal includeexpr=RpgleInclude(v:fname)
 setlocal equalprg=rpglefmt\ -Idrupp
 
+let b:match_words .= ',`\s*$:`[;)]'
+
 function! RpgleInclude(fname)
   let fname = a:fname
   let fname = substitute(fname, '/', '.lib/', '')
