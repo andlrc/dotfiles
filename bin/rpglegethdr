@@ -1,173 +1,69 @@
-#!/bin/sh
-# Usage:	rpglegethdr -[fqsvVh] [LIBRARY]...
-# Version:	0.4
+#!/bin/bash
+# Usage:	rpglegethdr LIBRARY...
+# Version:	1.0
 # Author:	Andreas Louv <andreas@louv.dk>
 
-pgm=${0##*/}
-version=0.3
-usage='-[fqsvVh] [LIBRARY]...'
+server=dksrv206
 
-verbose=
-force=
-silent=
 
-print_help()
+download_member()
 {
-	cat << HELP
-Usage $pgm $usage
+  local local_member=$1; shift
+  local remote_member=$1; shift
+  local remote_temp_file=$1; shift
 
-  -f   fetch all files, also unchanged
-  -q   include system headers (from QSYSLIB)
-  -s   supress information about fetched files
-  -v   be more verbose
 
-  -V   show version information
-  -h   show this help and exit
-HELP
+  # Create remote file
+  printf 'system "CPYTOSTMF FROMMBR('\''%s'\'') TOSTMF('\''%s'\'') STMFOPT(*REPLACE) STMFCCSID(1208) ENDLINFMT(*LF)"\n'	\
+	 "$remote_member" "$remote_temp_file" |
+    ssh -T "$server"
+
+  # Copy remote file to local file
+  scp "$server":"$remote_temp_file" "$local_member"
+
+  # Remove remote file
+  printf 'rm -- '\''%s'\''\n' "$remote_temp_file" |
+    ssh -T "$server"
+  >&2 printf "Removed remote file: '%s'\\n" "$remote_temp_file"
+
 }
 
-fetch_mbr()
+list_remote_files()
 {
-	mbr_file=$1; shift
-
-	out_name=$(printf "%s\n" "$mbr_file" |
-		sed 's:^.*/QSYS.LIB/::' |
-		awk '{ print tolower($0) }' |
-		sed 's/mbr$/rpgleinc/')
-	out_file="$out_dir/$out_name"
-
-	# Don't fetch non changed file
-	if test -z "$force" &&
-	   test -e "$out_file" &&
-	   test "$(stat -c %Y "$mbr_file")" -lt "$(stat -c %Y "$out_file")"
-	then
-		if test -n "$verbose"
-		then
-			>&2 printf "Already fetched '%s'\n" "$out_name"
-		fi
-	else
-		# NOTE: The data is in EBCDIC and in some fixed width.
-		# Hopefully there is an an include guard:
-		# /if not defined(NAME)
-		# /define NAME
-		#
-		# This means we can calculate the length between ``if not ...''
-		# and all the way until ``/define ...''
-		lwidth=$((6 + $(awk 'NR == 2 { print; exit(0); }' \
-				     RS='@@@@@@a' \
-				    "$mbr_file" |
-				wc -c)))
-		if test "$lwidth" -ne "120"
-		then
-			case $mbr_file in
-				*QSYSINC.LIB*)
-					lwidth=100
-					;;
-				*)
-					lwidth=228
-					;;
-			esac
-		fi
-
-		mkdir -p "${out_file%/*}"
-
-		dd if="$mbr_file" \
-		   of="$out_file" \
-		   bs="$lwidth"   \
-		   cbs="$lwidth"  \
-		   conv=ascii 2> /dev/null
-
-		printf "// Original file: '%s'\n" "$mbr_file" >> "$out_file"
-
-		if test -z "$silent"
-		then
-			# Show top of file to give a human a change to see the
-			# width
-			>&2 printf "Line width for '%s' is '%d'\n"	\
-				   "$out_name" "$lwidth"
-			>&2 head -5 "$out_file"
-		fi
-	fi
+  local remote_file=$1; shift
+  printf "ls '%s'" "$remote_file" | ssh -T "$server"
 }
 
-while getopts "hVfqsv" opt
-do
-	case $opt in
-		h)
-			print_help
-			exit 0
-			;;
-		V)
-			printf "%s %s\n" "$pgm" "$version"
-			exit 0
-			;;
-		f)
-			force=1
-			shift
-			;;
-		q)
-			qsyslib=1
-			shift
-			;;
-		s)
-			silent=1
-			shift
-			;;
-		v)
-			verbose=1
-			shift
-			;;
-		\?)
-			>&2 printf "%s: unknown option -%s\n" "$pgm" "$OPTARG"
-			exit 1
-			;;
-	esac
-done
+outdir=${XDG_CACHE_HOME:-~/.cache}/rpgledev
 
-out_dir=${XDG_CACHE_HOME:-~/.cache}/rpgledev
-mkdir -p "$out_dir"
-
-# Detect if we are mounted
-if ! stat /mnt/dksrv206/QSYS.LIB > /dev/null
+if test "$#" -eq 0
 then
-	exit 1
+  >&2 printf 'Usage: %s LIBRARY...\n' "${0##*/}"
+  exit 2
 fi
 
-# If libraries are specified then only use them
-if test "$#" -gt 0
-then
-	libl=$*
-	set --
-	for lib in $libl
-	do
-		set -- "$@" /mnt/dksrv206/QSYS.LIB/"$lib".LIB
-	done
-else
-	set -- /mnt/dksrv206/QSYS.LIB/*DEV.LIB		\
-	       /mnt/dksrv206/QSYS.LIB/ICEBREAK.LIB	\
-	       /mnt/dksrv206/QSYS.LIB/PORTFOLIO.LIB
-fi
+main()
+{
+  local remote_file local_file
+  local remote_member local_member remote_temp_file
+  for lib
+  do
+    for file in QASPHDR QRPGLESRC QRPGSRC
+    do
+      remote_file="/QSYS.LIB/$lib.LIB/$file.FILE"
+      local_file=$(echo "$outdir/$lib.LIB/$file.FILE" | tr '[:upper:]' '[:lower:]')
+      mkdir -p "$local_file"
 
-if test -n "$qsyslib"
-then
-	set -- "$@" /mnt/dksrv206/QSYS.LIB/QSYSINC.LIB
-fi
+      while IFS= read -r mbr
+      do
+	remote_member="$remote_file/$mbr"
+	local_member=$(echo "$local_file/$mbr" | tr '[:upper:]' '[:lower:]' | sed 's/\.mbr$/.rpgleinc/')
+	remote_temp_file="/tmp/rpglegethdr-$$-$lib-$file-$mbr"
 
-for lib
-do
-	test -d "$lib" || continue
-	for mbr_file in "$lib"/QRPGLESRC.FILE/*MBR	\
-			"$lib"/QASPHDR.FILE/*MBR	\
-			"$lib"/QRPGHDR.FILE/*MBR
-	do
-		test -e "$mbr_file" || continue
-		fetch_mbr "$mbr_file"
-	done
-done
+	download_member "$local_member" "$remote_member" "$remote_temp_file"
+      done < <(list_remote_files "$remote_file")
+    done
+  done
+}
 
-for dir in "$out_dir"/*.lib
-do
-	(
-		cd "$dir" && rpglectags ./*.file/*.rpgleinc
-	)
-done
+main "$@"
