@@ -21,7 +21,7 @@ set listchars+=tab:\|\
 
 augroup ColorChg
   au!
-  au ColorScheme nofrils-dark hi ibTplString term=italic cterm=italic gui=italic
+  au ColorScheme nofrils-dark hi rpgleString term=italic cterm=italic gui=italic
   au ColorScheme nofrils-dark hi link User1 StatusLineTermNC
   au ColorScheme nofrils-dark hi link User2 PmenuSel
 

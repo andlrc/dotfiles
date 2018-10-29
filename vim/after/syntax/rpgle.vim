@@ -17,8 +17,11 @@ syntax region  rpgleString matchgroup=Label
                          \ end=/<%/
                          \ contains=@Spell
 
-syntax match   rpgleCommentQuoted    /".\{-}"/
-syntax cluster rpgleCommentProps     add=rpgleCommentQuoted
+syntax region  rpgleCommentQuoted matchgroup=rpgleComment
+                                \ start=/"/
+                                \ end=/"/
 
-highlight link rpgleCommentQuoted rpgleSpecial
-highlight link ibTplString        rpgleString
+syntax cluster rpgleCommentProps     add=rpgleCommentQuoted
+highlight link rpgleCommentQuoted    Directory
+highlight link ibTplString           DiffDelete
+highlight link rpgleBracketedComment DiffDelete
