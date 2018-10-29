@@ -27,9 +27,6 @@ endfunction
 
 setlocal keywordprg=man\ -S3,3RPG,3RPGCOMPDIR,3RPGHSPEC
 
-setlocal makeprg=rpglemake\ %:p
-setlocal errorformat=%f:%l:%c:%m
-
 let path = [ '.', '~/.cache/rpgledev',
         \ '/mnt/dksrv206/www/dev/bas/shared/services',
         \ '/mnt/dksrv206/www/portfolio/admin/services' ]
