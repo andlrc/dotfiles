@@ -47,6 +47,8 @@ precmd() {
 
 work() {
 	CDPATH="$CDPATH${CDPATH:+:}/mnt/dksrv206/www/dev"
+	export SYSTEM='system ""'
+	export SYSTEM_UP='system "$?"'
 }
 
 u() {
