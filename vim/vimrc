@@ -14,8 +14,8 @@ set backspace=indent,eol,start
 set nrformats-=octal
 set notitle
 
-set undofile undodir^=~/.vim/tmp/undo//
-set directory^=~/.vim/tmp/swap//
+set undofile undodir^=~/.vim/undo//
+set directory^=~/.vim/swap//
 
 set listchars+=tab:\|\ 
 
