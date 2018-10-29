@@ -64,6 +64,9 @@ set suffixes^=,			" Files without extension
 set suffixes-=.h
 set completeopt-=preview
 
+" Dummy files to keep "make(1)" happy
+set wildignore=*.srvpgm,*.pgm,*.mod,*.bnddir
+
 " Wrapping {{{1
 
 " Why can't I set "nowrap" nor "textwidth" with "setglobal",
