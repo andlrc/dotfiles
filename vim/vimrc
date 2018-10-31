@@ -31,11 +31,6 @@ augroup END
 let g:nofrils_heavylinenumbers = 1
 colorscheme nofrils-dark
 
-" Leader {{{1
-
-let mapleader = "\<Space>"
-let maplocalleader = "\\"
-
 " Searching, Navigating and Compiling Files {{{1
 
 setglobal ignorecase smartcase hlsearch incsearch
@@ -85,13 +80,13 @@ inorea al@ andreas@louv.dk
 
 nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
 
-nnoremap <silent> <leader>cc
+nnoremap <silent> <space>cc
       \ :let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''<CR>
 
-nnoremap <silent> <leader>ss
+nnoremap <silent> <space>ss
       \ :echo synIDattr(synID(line('.'), col('.'), 0), 'name')<CR>
 
-nnoremap <silent> <leader>ww
+nnoremap <silent> <space>ww
       \ mz:keepp %s/\\\@<!\s\+$//e<cr>`z
 
 " Folding {{{1
