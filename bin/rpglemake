@@ -1,15 +1,52 @@
-#!/bin/sh
-# Usage:
-#	rpglemake <file>
+#!/bin/bash
+# Usage rpglemake <file>
 #
 # Author: Andreas Louv <andreas@louv.dk>
-# Version: 0.7
+# Version: 1.0
 
-path=$1; shift
-path=$(realpath "$path") # GNU
+bnddir()
+{
+	local file=$1; shift
 
-filename=${path##*/}
-project=$(printf '%s\n' "$path" |
-	awk -F/ '{ print $(NF-1) }')
+	grep -i 'ctl-opt' "$file" |
+		grep -o \''[^'\'']\+'\' |
+		grep -o '[^'\'']\+' |
+		while IFS= read -r bnddir
+		do
+			if test -f "${bnddir,,}".srvpgm
+			then
+				echo "${bnddir,,}.bnddir"
+			fi
+		done
+}
 
-ssh dksrv206 "./compile/do '$project' '$filename'" < "$path"
+include()
+{
+	local file=$1; shift
+
+	sed 's~^\s*/\(include\|copy\)\s\+\(.*\.rpgleinc\)\s*~\2~p;d' "$file"
+}
+
+for file
+do
+	if ! echo "$file" | grep -q '\.\(rpgle\)'
+	then
+		continue
+	fi
+
+	mapfile -t deps < <(include "$file")
+	if test "${#deps[@]}" -gt 0
+	then
+		printf "%s.mod:\\t%s\\n" "${file%.*}" "${deps[*]}"
+	fi
+
+	if ! grep -i 'ctl-opt' "$file" | grep -qi nomain
+	then
+		mapfile -t deps < <(bnddir "$file")
+		if test "${#deps[@]}" -gt 0
+		then
+			printf "%s.pgm:\\t%s\\n" "${file%.rpgle}" "${deps[*]}"
+		fi
+	fi
+
+done
