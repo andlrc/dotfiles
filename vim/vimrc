@@ -40,7 +40,7 @@ setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags}
                      \\ $*
 
 nnoremap gb :ls<cr>:b<space>
-nnoremap g/ :g//#<left><left>
+nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
 
 " Enhanced % {{{2
 
@@ -76,18 +76,14 @@ set formatoptions-=t
 inorea <al@ <andreas@louv.dk
 inorea al@ andreas@louv.dk
 
-" Convenience mappings {{{1
+" Commands {{{1
 
-nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
+command! ColorColumn let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''
+command! Syntax      echo synIDattr(synID(line('.'), col('.'), 0), 'name')
 
-nnoremap <silent> <space>cc
-      \ :let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''<CR>
-
-nnoremap <silent> <space>ss
-      \ :echo synIDattr(synID(line('.'), col('.'), 0), 'name')<CR>
-
-nnoremap <silent> <space>ww
-      \ mz:keepp %s/\\\@<!\s\+$//e<cr>`z
+command! -range=% TR let b:wv = winsaveview() |
+                   \ keeppattern <line1>,<line2>s/\\\@<!\s\+$// |
+                   \ call winrestview(b:wv)
 
 " Folding {{{1
 
