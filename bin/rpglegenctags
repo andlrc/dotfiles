@@ -1,6 +1,6 @@
 #!/bin/sh
 # Usage:	rpglegenctags { -h | -V | { -p project | -c } [ -g ] }
-# Version:	0.7
+# Version:	0.8
 # Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
@@ -41,20 +41,37 @@ gen_tags()
 		tags_stat=$(stat -c %Y tags)
 		mod_stat=0 # highest modified file change time
 		mod_file='' # reference file
+		files_tot=0
+		files_mod=0
 		for file in $file_globs
 		do
 			test -e "$file" || continue
+			files_tot=$((files_tot+1))
+		done
+		for file in $file_globs
+		do
+			test -e "$file" || continue
+
 			file_stat=$(stat -c %Y "$file")
-			if test "$file_stat" -ge "$tags_stat"
+			if test "$file_stat" -gt "$mod_stat"
 			then
-				if test "$file_stat" -ge "$mod_stat"
-				then
-					mod_stat=$file_stat
-					mod_file=$file
-				fi
+				mod_stat=$file_stat
+				mod_file=$file
+			fi
+			files_mod=$((files_mod + 1))
+			if test -t 2 # tty output
+			then
 				>&2 printf "\\r%*s" "$(tput cols)" " "
-				>&2 printf "\\rGenerating tags for '%s'"	\
-				    "$dir/$file"
+				>&2 printf "\\rChecking file (%d/%d) '%s'"	\
+				    "$files_mod" "$files_tot" "$dir/$file"
+			else # log-file
+				>&2 printf "Checking file (%d/%d) '%s'\\n"	\
+				    "$files_mod" "$files_tot" "$dir/$file"
+			fi
+
+			# Generate tags...
+			if test "$file_stat" -gt "$tags_stat"
+			then
 				tagstmp=$(mktemp)
 				awk -v file="$file" -F'\t' \
 				     '$2 != file' tags > "$tagstmp"
@@ -62,11 +79,11 @@ gen_tags()
 				rpglectags -a "$file" < /dev/null
 			fi
 		done
-		if test "$mod_stat" -gt 0
+		if test -t 2
 		then
 			>&2 printf "\\n"
-			touch -mr "$mod_file" tags
 		fi
+		touch -mr "$mod_file" tags
 	fi
 }
 
