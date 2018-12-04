@@ -7,6 +7,7 @@
 [diff]
 	tool = vimdiff
 	compactionHeuristic = true
+	algorythm = histogram
 [submodule]
 	fetchJobs = 8
 [url "ssh://192.168.5.206/git/"]
