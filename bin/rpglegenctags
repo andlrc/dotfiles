@@ -1,13 +1,12 @@
 #!/bin/sh
-# Usage:	rpglegenctags { -h | -V | { -p project | -c } [ -g ] }
-# Version:	0.8
+# Usage:	rpglegenctags { -h | -V | -[aw]... }
+# Version:	0.9
 # Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
-version=0.6
+version=0.9
 usage='{ -h | -V | -[aw]... }'
 
-project=""
 aflag=0
 wflag=0
 
@@ -29,7 +28,7 @@ gen_tags()
 	file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
 	if test "$wflag" -gt 0 || ! test -e tags
 	then
-		>&2 printf "Generating a new tag file in '%s'\\n" "$dir"
+		>&2 printf "Generating whole tags-file in '%s'\\n" "$dir"
 		set -- # All files
 		for file in $file_globs
 		do
@@ -62,10 +61,10 @@ gen_tags()
 			if test -t 2 # tty output
 			then
 				>&2 printf "\\r%*s" "$(tput cols)" " "
-				>&2 printf "\\rChecking file (%d/%d) '%s'"	\
+				>&2 printf "\\rChecking (%d/%d): %s"	\
 				    "$files_mod" "$files_tot" "$dir/$file"
 			else # log-file
-				>&2 printf "Checking file (%d/%d) '%s'\\n"	\
+				>&2 printf "Checking (%d/%d): %s\\n"	\
 				    "$files_mod" "$files_tot" "$dir/$file"
 			fi
 
@@ -112,23 +111,14 @@ do
 	esac
 done
 
+set --
 if test "$aflag" -gt 0
 then
 	set -- /mnt/dksrv206/www/Portfolio/Admin/Services	\
-	       /mnt/dksrv206/www/dev/bas/shared/services
+	       /mnt/dksrv206/www/dev/bas/shared/services	\
+	       .
 else
-	set --
-fi
-
-project=$(pwd | sed 's=^/mnt/dksrv206/www/dev/\([^/]*\)/[^/]*/services.*=\1=p;d')
-if test -n "$project"
-then
-	if ! test "$project" = "bas"
-	then
-		set -- "$@" /mnt/dksrv206/www/dev/"$project"/customized/services
-	fi
-else
-	set -- "$@" .
+	set -- .
 fi
 
 for dir
