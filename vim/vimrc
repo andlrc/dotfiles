@@ -35,7 +35,7 @@ colorscheme nofrils-dark
 
 setglobal ignorecase smartcase hlsearch incsearch
 setglobal path+=**
-setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags}
+setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags,js.tags,html.tags}
                      \\ --exclude-dir={node_modules,.git}
                      \\ $*
 
