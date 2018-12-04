@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my $buffer = '';
+$buffer .= $_ while (<>);
+
+$buffer =~ s{ ` (.*?) ` }{"'". tplexpr($1) ."'"}xmseg;
+$buffer =~ s{ ^(.{77}) \s+ -$ }{$1 -}xmg;
+
+print $buffer;
+
+sub tplexpr
+{
+  my ($match) = @_;
+
+  $match =~ s{ ' }{''}xmsg;
+  $match =~ s{ \$\{ (.*?) \} }{"' + ". ($1 =~ s/''/'/xmsrg) ." + '"}xmseg;
+  $match =~ s{ ^(.*?)\n }{$1 ." "x(77-length($1)) . " -\n"}xmseg;
+
+  return $match;
+}
