@@ -3,5 +3,5 @@ export VISUAL=vim
 export EDITOR=vim
 export LANG=en_US.UTF-8
 export NODE_PATH="/usr/lib/node_modules"
-export PATH="$PATH:$HOME/bin:$DW_ROOT/bin"
+export PATH="$PATH:$HOME/bin:$DW_ROOT/bin:."
 export RPGLELINT_INCLUDE="~/.cache/rpgledev/{icebreak.lib,portfolio.lib,basdev.lib,}"
