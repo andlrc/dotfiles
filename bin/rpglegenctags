@@ -10,6 +10,7 @@ usage='{ -h | -V | -[aw]... }'
 aflag=0
 wflag=0
 
+# print_help
 print_help()
 {
 	cat << HELP
@@ -23,6 +24,21 @@ Usage $pgm $usage
 HELP
 }
 
+# in_list "needle" "item1" "item2" ... "itemN"
+in_list()
+{
+	needle=$1; shift
+	for item
+	do
+		if test "$item" = "$needle"
+		then
+			return 0
+		fi
+	done
+	return 1
+}
+
+# gen_tags
 gen_tags()
 {
 	file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
@@ -111,14 +127,17 @@ do
 	esac
 done
 
-set --
 if test "$aflag" -gt 0
 then
 	set -- /mnt/dksrv206/www/Portfolio/Admin/Services	\
-	       /mnt/dksrv206/www/dev/bas/shared/services	\
-	       .
+	       /mnt/dksrv206/www/dev/bas/shared/services
 else
-	set -- .
+	set --
+fi
+
+if ! in_list "$PWD" "$@"
+then
+	set -- "$@" "$PWD"
 fi
 
 for dir
