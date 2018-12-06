@@ -1,13 +1,13 @@
 #!/bin/sh
-# Usage:	rpglegenctags { -h | -V | -[aw]... }
-# Version:	0.10
+# Usage:	rpglegenctags { -h | -V | -[avw]... }
 # Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
-version=0.10
+version=0.11
 usage='{ -h | -V | -[aw]... }'
 
 aflag=0
+vflag=0
 wflag=0
 
 # print_help
@@ -38,6 +38,46 @@ in_list()
 	return 1
 }
 
+# print_file_info_tail "modified" "total" "dir"
+print_file_info_tail()
+{
+	modified=$1; shift
+	total=$1; shift
+
+	if test -t 1 # tty output
+	then
+		printf "\\n"
+	elif test "$vflag" -ge 2
+	then
+		printf "!%d out of %d is modified in %s\\n"	\
+		       "$modified" "$total" "$dir"
+	fi
+}
+
+# print_file_info ix tot file
+print_file_info()
+{
+	ix=$1; shift;
+	tot=$1; shift;
+	file=$1; shift;
+	is_modified=$1; shift;
+
+	if test -t 1 # tty output
+	then
+		# clear line
+		printf "\\r%*s" "$(tput cols)" " "
+		printf "\\rChecking (%d/%d): %s" "$ix" "$tot" "$file"
+	else # log-file
+		if test "$is_modified" -gt 0
+		then
+			printf "+%s\\n" "$file"
+		elif test "$vflag" -ge 1
+		then
+			printf " %s\\n" "$file"
+		fi
+	fi
+}
+
 # gen_tags "directory"
 gen_tags()
 {
@@ -48,7 +88,7 @@ gen_tags()
 		file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
 		if test "$wflag" -gt 0 || ! test -e tags
 		then
-			>&2 printf "Generating whole tags-file in '%s'\\n" "$dir"
+			printf "Generating whole tags-file in '%s'\\n" "$dir"
 			set -- # All files
 			for file in $file_globs
 			do
@@ -62,6 +102,7 @@ gen_tags()
 			mod_file='' # reference file
 			files_tot=0
 			files_mod=0
+			files_ix=0
 			for file in $file_globs
 			do
 				test -e "$file" || continue
@@ -77,37 +118,35 @@ gen_tags()
 					mod_stat=$file_stat
 					mod_file=$file
 				fi
-				files_mod=$((files_mod + 1))
-				if test -t 2 # tty output
+				files_ix=$((files_ix + 1))
+				if test "$file_stat" -gt "$tags_stat"
 				then
-					>&2 printf "\\r%*s" "$(tput cols)" " "
-					>&2 printf "\\rChecking (%d/%d): %s"	\
-					    "$files_mod" "$files_tot" "$dir/$file"
-				else # log-file
-					>&2 printf "Checking (%d/%d): %s\\n"	\
-					    "$files_mod" "$files_tot" "$dir/$file"
+					is_modified=1
+				else
+					is_modified=0
 				fi
 
+				print_file_info "$files_ix" "$files_tot"	\
+						"$dir/$file" "$is_modified"
+
 				# Generate tags...
-				if test "$file_stat" -gt "$tags_stat"
+				if test "$is_modified" -gt 0
 				then
 					tagstmp=$(mktemp)
 					awk -v file="$file" -F'\t' \
 					     '$2 != file' tags > "$tagstmp"
 					mv "$tagstmp" tags
 					rpglectags -a "$file" < /dev/null
+					files_mod=$((files_mod + 1))
 				fi
 			done
-			if test -t 2
-			then
-				>&2 printf "\\n"
-			fi
+			print_file_info_tail "$files_mod" "$files_tot" "$dir"
 			touch -mr "$mod_file" tags
 		fi
 	)
 }
 
-while getopts "hVaw" opt
+while getopts "hVavw" opt
 do
 	case $opt in
 		h)
@@ -119,10 +158,13 @@ do
 			exit 0
 			;;
 		a)
-			aflag=1
+			aflag=$((aflag + 1))
+			;;
+		v)
+			vflag=$((vflag + 1))
 			;;
 		w)
-			wflag=1
+			wflag=$((wflag + 1))
 			;;
 		\?)
 			>&2 printf '%s: unknown option -%s\n' \
