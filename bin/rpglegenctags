@@ -1,199 +1,210 @@
-#!/bin/sh
-# Usage:	rpglegenctags { -h | -V | -[avw]... }
-# Author:	Andreas Louv <andreas@louv.dk>
+#!/usr/bin/env perl
 
-pgm=${0##*/}
-version=0.12
-usage='{ -h | -V | -[aw]... }'
+=head1 NAME
 
-aflag=0
-vflag=0
-wflag=0
+rpglegenctags - Generate ctags helper command
 
-# print_help
-print_help()
+=head1 SYNOPSIS
+
+rpglegenctags [I<OPTIONS>]...
+
+=head1 DESCRIPTION
+
+rpglegenctags will generate ctags-compatible files using the executable B<rpglectags>.
+
+=head2 Options
+
+=over 4
+
+=item B<-a>, B<--all>
+
+generate ctags for all projects in the requirement chain
+
+=item B<-v>, B<--verbose>=B<level>
+
+verbosity level, use multiple times for more verbosity
+
+=item B<-w>, B<--whole>
+
+generate the whole B<tags> file
+
+=item B<-V>, B<--version>
+
+show version information and exit
+
+=item B<-h>, B<--help>
+
+show help and exit
+
+=back
+
+=head1 SEE ALSO
+
+B<rpglectags>(1)
+B<rpglelint>(1)
+
+=head1 AUTHOR
+
+Andreas Louv <andreas@louv.dk>.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut
+
+use strict;
+use warnings;
+use Getopt::Long qw{ :config no_ignore_case gnu_compat bundling };
+use Cwd;
+use Pod::Usage;
+
+our $PGM = 'rpglegenctags';
+our $VERSION = '0.14';
+
+my $aflag = 0;
+my $vflag = 0;
+my $wflag = 0;
+
+sub get_cols
 {
-	cat << HELP
-Usage $pgm $usage
-
-  -a  generate tags for Portfolio and BAS
-  -w  generate the whole tags file
-
-  -V  show version information
-  -h  show this help and exit
-HELP
+    return `tput cols`;
 }
 
-# in_list "needle" "item1" "item2" ... "itemN"
-in_list()
+sub get_mtime($)
 {
-	needle=$1; shift
-	for item
-	do
-		if test "$item" = "$needle"
-		then
-			return 0
-		fi
-	done
-	return 1
+  my ($file) = @_;
+  my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+      $atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
+
+  return $mtime;
 }
 
-# print_file_info_tail "modified" "total" "dir"
-print_file_info_tail()
+sub gen_tags($)
 {
-	modified=$1; shift
-	total=$1; shift
+  my ($dir) = @_;
+  my $prev_dir = getcwd();
+  chdir($dir);
 
-	if test -t 1 # tty output
-	then
-		printf "\\n"
+  my @files = <*.rpgle *.aspx *.asmx *.rpgleinc>;
+  if (!@files) {
+    if (-t 1) {
+      printf("No files to check in '%s'\n", $dir);
+    } else {
+      printf("!No files to check in '%s'\n", $dir);
+    }
+  } elsif ($wflag || ! -e 'tags') {
+    if (-t 1) {
+      printf("Generating whole 'tags'-file in '%s'\n", $dir);
+    } else {
+      printf("!Generating whole 'tags'-file in '%s'\n", $dir);
+    }
+    system("rpglectags", @files);
+  } else {
+    my $tags_stat = get_mtime("tags");
+    my $mod_stat = {
+      mtime => 0, # highest modified file time
+      file => '', # reference file
+      files_modified => 0
+    };
 
-		if test "$vflag" -ge 1
-		then
-			printf "Files modified %d out of %d in %s\\n"	\
-			       "$modified" "$total" "$dir"
-		fi
-	elif test "$vflag" -ge 2
-	then
-		printf "!%d out of %d is modified in %s\\n"	\
-		       "$modified" "$total" "$dir"
-	fi
+    for my $ix (0..$#files) {
+      my $file = $files[$ix];
+      my $file_stat = get_mtime($file);
+      if ($file_stat > $mod_stat->{mtime}) {
+        $mod_stat->{mtime} = $file_stat;
+        $mod_stat->{file} = $file;
+      }
+
+      if (-t 1) { # tty output
+        # clear line
+        printf("\r%s", " " x get_cols());
+
+        # print info
+        printf("\rChecking (%d/%d): %s/%s", $ix + 1, scalar(@files), $dir, $file);
+        if ($vflag >= 2 && $file_stat > $tags_stat) {
+          printf("\rModified (%d/%d): %s/%s\n", $ix + 1, scalar(@files), $dir, $file);
+        } else {
+          printf("\rChecking (%d/%d): %s/%s", $ix + 1, scalar(@files), $dir, $file);
+        }
+      } else {
+        if ($file_stat > $tags_stat) {
+          printf("+%s/%s\n", $dir, $file);
+        } elsif ($vflag >= 1) {
+          printf(" %s/%s\n", $dir, $file);
+        }
+      }
+
+      # file is modified
+      if ($file_stat > $tags_stat) {
+        $mod_stat->{files_modified}++;
+        my $fh;
+        my @tags;
+        open($fh, '<', 'tags') or die($!);
+        while (<$fh>) {
+          my @words = split(/\t/, $_);
+          # remove any tags from "$file"
+          push(@tags, $_) if ($words[1] ne $file);
+        }
+        close($fh);
+
+        open($fh, '>', 'tags') or die($!);
+        for (@tags) {
+          printf($fh "%s", $_);
+        }
+        close($fh);
+
+        system("rpglectags", "-a", "$file");
+      }
+    }
+    printf("\n") if -t 1;
+
+    if ($mod_stat->{files_modified}) {
+      if (-t 1) {
+        if ($vflag >= 1) {
+          printf("Files modified %d out of %d in %s\n",
+                 $mod_stat->{files_modified}, scalar(@files), $dir);
+        }
+      } else {
+        if ($vflag >= 2) {
+          printf("!Files modified %d out of %d in %s\n",
+                 $mod_stat->{files_modified}, scalar(@files), $dir);
+        }
+      }
+      system("touch", "-r", $mod_stat->{file}, "tags");
+    }
+  }
+
+  chdir($prev_dir);
 }
 
-# print_file_info ix tot file
-print_file_info()
-{
-	ix=$1; shift;
-	tot=$1; shift;
-	file=$1; shift;
-	is_modified=$1; shift;
+GetOptions(
+  'a|all' => \$aflag,
+  'v' => sub {
+    $vflag++;
+  },
+  'verbose=i' => \$vflag,
+  'w|whole' => \$wflag,
+  'V|version' => sub {
+    printf("%s %s\n", $PGM, $VERSION);
+    exit(0);
+  },
+  'help' => sub {
+    pod2usage( -verbose => 99, -sections => 'SYNOPSIS|DESCRIPTION' );
+    exit(0);
+  }
+) or exit(2);
 
-	if test -t 1 # tty output
-	then
-		# clear line
-		printf "\\r%*s" "$(tput cols)" " "
-		printf "\\rChecking (%d/%d): %s" "$ix" "$tot" "$file"
-	else # log-file
-		if test "$is_modified" -gt 0
-		then
-			printf "+%s\\n" "$file"
-		elif test "$vflag" -ge 1
-		then
-			printf " %s\\n" "$file"
-		fi
-	fi
+my @dirs;
+if ($aflag) {
+  push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
+  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
 }
 
-# gen_tags "directory"
-gen_tags()
-{
-	dir=$1; shift
-	(
-		cd "$dir" || exit 1
+my $pwd = getcwd();
+push(@dirs, $pwd) unless (grep { $pwd eq $_ } @dirs);
 
-		file_globs="*.rpgle *.aspx *.asmx *.rpgleinc"
-		if test "$wflag" -gt 0 || ! test -e tags
-		then
-			printf "Generating whole tags-file in '%s'\\n" "$dir"
-			set -- # All files
-			for file in $file_globs
-			do
-				test -e "$file" || continue
-				set -- "$@" "$file"
-			done
-			rpglectags "$@" < /dev/null
-		else
-			tags_stat=$(stat -c %Y tags)
-			mod_stat=0 # highest modified file change time
-			mod_file='' # reference file
-			files_tot=0
-			files_mod=0
-			files_ix=0
-			for file in $file_globs
-			do
-				test -e "$file" || continue
-				files_tot=$((files_tot+1))
-			done
-			for file in $file_globs
-			do
-				test -e "$file" || continue
-
-				file_stat=$(stat -c %Y "$file")
-				if test "$file_stat" -gt "$mod_stat"
-				then
-					mod_stat=$file_stat
-					mod_file=$file
-				fi
-				files_ix=$((files_ix + 1))
-				if test "$file_stat" -gt "$tags_stat"
-				then
-					is_modified=1
-				else
-					is_modified=0
-				fi
-
-				print_file_info "$files_ix" "$files_tot"	\
-						"$dir/$file" "$is_modified"
-
-				# Generate tags...
-				if test "$is_modified" -gt 0
-				then
-					tagstmp=$(mktemp)
-					awk -v file="$file" -F'\t' \
-					     '$2 != file' tags > "$tagstmp"
-					mv "$tagstmp" tags
-					rpglectags -a "$file" < /dev/null
-					files_mod=$((files_mod + 1))
-				fi
-			done
-			print_file_info_tail "$files_mod" "$files_tot" "$dir"
-			touch -mr "$mod_file" tags
-		fi
-	)
+for my $dir (@dirs) {
+  gen_tags($dir);
 }
-
-while getopts "hVavw" opt
-do
-	case $opt in
-		h)
-			print_help
-			exit 0
-			;;
-		V)
-			printf "%s %s\\n" "$pgm" "$version"
-			exit 0
-			;;
-		a)
-			aflag=$((aflag + 1))
-			;;
-		v)
-			vflag=$((vflag + 1))
-			;;
-		w)
-			wflag=$((wflag + 1))
-			;;
-		\?)
-			>&2 printf '%s: unknown option -%s\n' \
-				   "$pgm" "$OPTARG"
-			exit 1
-			;;
-	esac
-done
-
-if test "$aflag" -gt 0
-then
-	set -- /mnt/dksrv206/www/Portfolio/Admin/Services	\
-	       /mnt/dksrv206/www/dev/bas/shared/services
-else
-	set --
-fi
-
-if ! in_list "$PWD" "$@"
-then
-	set -- "$@" "$PWD"
-fi
-
-for dir
-do
-	gen_tags "$dir"
-done
