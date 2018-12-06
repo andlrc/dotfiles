@@ -3,7 +3,7 @@
 # Author:	Andreas Louv <andreas@louv.dk>
 
 pgm=${0##*/}
-version=0.11
+version=0.12
 usage='{ -h | -V | -[aw]... }'
 
 aflag=0
@@ -47,6 +47,12 @@ print_file_info_tail()
 	if test -t 1 # tty output
 	then
 		printf "\\n"
+
+		if test "$vflag" -ge 1
+		then
+			printf "Files modified %d out of %d in %s\\n"	\
+			       "$modified" "$total" "$dir"
+		fi
 	elif test "$vflag" -ge 2
 	then
 		printf "!%d out of %d is modified in %s\\n"	\
