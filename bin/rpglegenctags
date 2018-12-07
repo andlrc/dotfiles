@@ -16,6 +16,10 @@ rpglegenctags will generate ctags-compatible files using the executable B<rpglec
 
 =over 4
 
+=item B<-A>, B<--all-projects>
+
+generate ctags for all projects
+
 =item B<-a>, B<--all>
 
 generate ctags for all projects in the requirement chain
@@ -63,6 +67,7 @@ use Pod::Usage;
 our $PGM = 'rpglegenctags';
 our $VERSION = '0.14';
 
+my $Aflag = 0;
 my $aflag = 0;
 my $vflag = 0;
 my $wflag = 0;
@@ -180,24 +185,29 @@ sub gen_tags($)
 }
 
 GetOptions(
-  'a|all' => \$aflag,
+  'A|all-projects' => \$Aflag,
   'v' => sub {
     $vflag++;
   },
+  'a|all' => \$aflag,
   'verbose=i' => \$vflag,
   'w|whole' => \$wflag,
   'V|version' => sub {
     printf("%s %s\n", $PGM, $VERSION);
     exit(0);
   },
-  'help' => sub {
+  'h|help' => sub {
     pod2usage( -verbose => 99, -sections => 'SYNOPSIS|DESCRIPTION' );
     exit(0);
   }
 ) or exit(2);
 
 my @dirs;
-if ($aflag) {
+if ($Aflag) {
+  push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
+  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
+  push(@dirs, </mnt/dksrv206/www/dev/???/customized/services>);
+} elsif ($aflag) {
   push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
   push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
 }
