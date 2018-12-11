@@ -9,7 +9,7 @@ use Carp;
 use List::Util qw{ none };
 
 our $PGM = 'rpglegenctags';
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 my $flags = {
   A => 0,
