@@ -1,5 +1,193 @@
 #!/usr/bin/env perl
 
+use strict;
+use warnings;
+use Getopt::Long qw{ :config no_ignore_case gnu_compat bundling };
+use Cwd;
+use Pod::Usage;
+use Carp;
+use List::Util qw{ none };
+
+our $PGM = 'rpglegenctags';
+our $VERSION = '0.14';
+
+my $flags = {
+  A => 0,
+  a => 0,
+  v => 0,
+  w => 0
+};
+
+sub get_cols
+{
+  return `tput cols`;
+}
+
+sub get_mtime
+{
+  my ($file) = @_;
+  my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+      $atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
+
+  return $mtime;
+}
+
+sub gen_all_tags
+{
+  my ($dir, @files) = @_;
+
+  if (-t 1) { # tty output
+    printf("Generating whole 'tags'-file in '%s'\n", $dir);
+  } else { # pipe
+    printf("!Generating whole 'tags'-file in '%s'\n", $dir);
+  }
+  system("rpglectags", @files);
+  return;
+}
+
+sub gen_partial_tags
+{
+  my ($dir, @files) = @_;
+
+  my $tags_stat = get_mtime("tags");
+  my $mod_stat = {
+    mtime => 0, # highest modified file time
+    file => "", # reference file
+    files_modified => 0
+  };
+
+  for my $ix (0..$#files) {
+    my $file = $files[$ix];
+    my $file_stat = get_mtime($file);
+    if ($file_stat > $mod_stat->{mtime}) {
+      $mod_stat->{mtime} = $file_stat;
+      $mod_stat->{file} = $file;
+    }
+
+    if (-t 1) { # tty output
+      # clear line
+      printf("\r%s", " " x get_cols());
+
+      # print info
+      printf("\rChecking (%d/%d): %s/%s", $ix + 1, scalar(@files), $dir, $file);
+      if ($flags->{v} >= 2 && $file_stat > $tags_stat) {
+        printf("\rModified (%d/%d): %s/%s\n", $ix + 1, scalar(@files), $dir, $file);
+      } else {
+        printf("\rChecking (%d/%d): %s/%s", $ix + 1, scalar(@files), $dir, $file);
+      }
+    } else { # pipe
+      if ($file_stat > $tags_stat) {
+        printf("+%s/%s\n", $dir, $file);
+      } elsif ($flags->{v} >= 1) {
+        printf(" %s/%s\n", $dir, $file);
+      }
+    }
+
+    # file is modified
+    if ($file_stat > $tags_stat) {
+      $mod_stat->{files_modified}++;
+      my $fh;
+      my @tags;
+      open($fh, '<', 'tags') or croak("Failed to open 'tags' file for reading");
+      while (<$fh>) {
+        my @words = split("\t");
+        # remove any tags from "$file"
+        push(@tags, $_) if ($words[1] ne $file);
+      }
+      close($fh) or croak("Failed to close 'tags' file after reading");
+
+      open($fh, '>', 'tags') or croak("Failed to open 'tags' file for writing");
+      for (@tags) {
+        printf($fh "%s", $_);
+      }
+      close($fh) or croak("Failed to close 'tags' file after writing");
+
+      system("rpglectags", "-a", "$file");
+    }
+  }
+  if (-t 1) { # tty output
+    printf("\n");
+  }
+
+  if ($mod_stat->{files_modified}) {
+    if (-t 1) { # tty output
+      if ($flags->{v} >= 1) {
+        printf("Files modified %d out of %d in %s\n",
+               $mod_stat->{files_modified}, scalar(@files), $dir);
+      }
+    } else { # pipe
+      if ($flags->{v} >= 2) {
+        printf("!Files modified %d out of %d in %s\n",
+               $mod_stat->{files_modified}, scalar(@files), $dir);
+      }
+    }
+    system("touch", "-r", $mod_stat->{file}, "tags");
+  }
+  return;
+}
+
+sub gen_tags
+{
+  my ($dir) = @_;
+  my $prev_dir = getcwd();
+  chdir($dir);
+
+  my @files = glob("*.rpgle *.aspx *.asmx *.rpgleinc");
+  if (!@files) {
+    if (-t 1) { # tty output
+      printf("No files to check in '%s'\n", $dir);
+    } else { # pipe
+      printf("!No files to check in '%s'\n", $dir);
+    }
+  } elsif ($flags->{w} || ! -e 'tags') {
+    gen_all_tags($dir, @files);
+  } else {
+    gen_partial_tags($dir, @files);
+  }
+
+  chdir($prev_dir);
+  return;
+}
+
+GetOptions(
+  'A|all-projects' => \$flags->{A},
+  'v' => sub {
+    $flags->{v}++;
+  },
+  'a|all' => \$flags->{a},
+  'verbose=i' => \$flags->{v},
+  'w|whole' => \$flags->{w},
+  'V|version' => sub {
+    printf("%s %s\n", $PGM, $VERSION);
+    exit(0);
+  },
+  'h|help' => sub {
+    pod2usage( -verbose => 99, -sections => 'SYNOPSIS|DESCRIPTION' );
+    exit(0);
+  }
+) or exit(2);
+
+my @dirs;
+if ($flags->{A}) {
+  push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
+  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
+  push(@dirs, glob("/mnt/dksrv206/www/dev/???/customized/services"));
+} elsif ($flags->{a}) {
+  push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
+  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
+}
+
+my $pwd = getcwd();
+if (none { $pwd eq $_ } @dirs) {
+  push(@dirs, $pwd);
+}
+
+for my $dir (@dirs) {
+  gen_tags($dir);
+}
+
+__END__
+
 =head1 NAME
 
 rpglegenctags - Generate ctags helper command
@@ -57,164 +245,3 @@ This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =cut
-
-use strict;
-use warnings;
-use Getopt::Long qw{ :config no_ignore_case gnu_compat bundling };
-use Cwd;
-use Pod::Usage;
-
-our $PGM = 'rpglegenctags';
-our $VERSION = '0.14';
-
-my $Aflag = 0;
-my $aflag = 0;
-my $vflag = 0;
-my $wflag = 0;
-
-sub get_cols
-{
-    return `tput cols`;
-}
-
-sub get_mtime($)
-{
-  my ($file) = @_;
-  my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-      $atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
-
-  return $mtime;
-}
-
-sub gen_tags($)
-{
-  my ($dir) = @_;
-  my $prev_dir = getcwd();
-  chdir($dir);
-
-  my @files = <*.rpgle *.aspx *.asmx *.rpgleinc>;
-  if (!@files) {
-    if (-t 1) {
-      printf("No files to check in '%s'\n", $dir);
-    } else {
-      printf("!No files to check in '%s'\n", $dir);
-    }
-  } elsif ($wflag || ! -e 'tags') {
-    if (-t 1) {
-      printf("Generating whole 'tags'-file in '%s'\n", $dir);
-    } else {
-      printf("!Generating whole 'tags'-file in '%s'\n", $dir);
-    }
-    system("rpglectags", @files);
-  } else {
-    my $tags_stat = get_mtime("tags");
-    my $mod_stat = {
-      mtime => 0, # highest modified file time
-      file => '', # reference file
-      files_modified => 0
-    };
-
-    for my $ix (0..$#files) {
-      my $file = $files[$ix];
-      my $file_stat = get_mtime($file);
-      if ($file_stat > $mod_stat->{mtime}) {
-        $mod_stat->{mtime} = $file_stat;
-        $mod_stat->{file} = $file;
-      }
-
-      if (-t 1) { # tty output
-        # clear line
-        printf("\r%s", " " x get_cols());
-
-        # print info
-        printf("\rChecking (%d/%d): %s/%s", $ix + 1, scalar(@files), $dir, $file);
-        if ($vflag >= 2 && $file_stat > $tags_stat) {
-          printf("\rModified (%d/%d): %s/%s\n", $ix + 1, scalar(@files), $dir, $file);
-        } else {
-          printf("\rChecking (%d/%d): %s/%s", $ix + 1, scalar(@files), $dir, $file);
-        }
-      } else {
-        if ($file_stat > $tags_stat) {
-          printf("+%s/%s\n", $dir, $file);
-        } elsif ($vflag >= 1) {
-          printf(" %s/%s\n", $dir, $file);
-        }
-      }
-
-      # file is modified
-      if ($file_stat > $tags_stat) {
-        $mod_stat->{files_modified}++;
-        my $fh;
-        my @tags;
-        open($fh, '<', 'tags') or die($!);
-        while (<$fh>) {
-          my @words = split(/\t/, $_);
-          # remove any tags from "$file"
-          push(@tags, $_) if ($words[1] ne $file);
-        }
-        close($fh);
-
-        open($fh, '>', 'tags') or die($!);
-        for (@tags) {
-          printf($fh "%s", $_);
-        }
-        close($fh);
-
-        system("rpglectags", "-a", "$file");
-      }
-    }
-    printf("\n") if -t 1;
-
-    if ($mod_stat->{files_modified}) {
-      if (-t 1) {
-        if ($vflag >= 1) {
-          printf("Files modified %d out of %d in %s\n",
-                 $mod_stat->{files_modified}, scalar(@files), $dir);
-        }
-      } else {
-        if ($vflag >= 2) {
-          printf("!Files modified %d out of %d in %s\n",
-                 $mod_stat->{files_modified}, scalar(@files), $dir);
-        }
-      }
-      system("touch", "-r", $mod_stat->{file}, "tags");
-    }
-  }
-
-  chdir($prev_dir);
-}
-
-GetOptions(
-  'A|all-projects' => \$Aflag,
-  'v' => sub {
-    $vflag++;
-  },
-  'a|all' => \$aflag,
-  'verbose=i' => \$vflag,
-  'w|whole' => \$wflag,
-  'V|version' => sub {
-    printf("%s %s\n", $PGM, $VERSION);
-    exit(0);
-  },
-  'h|help' => sub {
-    pod2usage( -verbose => 99, -sections => 'SYNOPSIS|DESCRIPTION' );
-    exit(0);
-  }
-) or exit(2);
-
-my @dirs;
-if ($Aflag) {
-  push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
-  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
-  push(@dirs, </mnt/dksrv206/www/dev/???/customized/services>);
-} elsif ($aflag) {
-  push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
-  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
-}
-
-my $pwd = getcwd();
-push(@dirs, $pwd) unless (grep { $pwd eq $_ } @dirs);
-
-for my $dir (@dirs) {
-  gen_tags($dir);
-}
