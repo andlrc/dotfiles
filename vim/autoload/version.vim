@@ -22,6 +22,7 @@ endfunction
 function s:Match(major)
   let major = submatch(2) 
   let minor = submatch(3) 
+  let old_version = major . '.' . minor
   if a:major
     let major += 1
     let minor = 0
@@ -31,7 +32,7 @@ function s:Match(major)
 
   let l:version = major . '.' . minor
 
-  echom 'New version is ' . l:version 
+  echom 'New version is ' . l:version . ', old version was ' . old_version
 
   return submatch(1) . l:version . submatch(4)
 endfunction
