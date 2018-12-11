@@ -85,6 +85,8 @@ command! -range=% TR let b:wv = winsaveview() |
                    \ keeppattern <line1>,<line2>s/\\\@<!\s\+$// |
                    \ call winrestview(b:wv)
 
+command! -bang Bump :call version#Bump(<bang>0)
+
 " Folding {{{1
 
 setglobal foldopen-=block
