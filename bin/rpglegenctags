@@ -9,7 +9,7 @@ use Carp;
 use List::Util qw{ none };
 
 our $PGM = 'rpglegenctags';
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 my $flags = {
   A => 0,
@@ -49,11 +49,12 @@ sub gen_partial_tags
 {
   my ($dir, @files) = @_;
 
+  my @files_modified;
+
   my $tags_stat = get_mtime("tags");
   my $mod_stat = {
     mtime => 0, # highest modified file time
-    file => "", # reference file
-    files_modified => 0
+    file => "" # reference file
   };
 
   for my $ix (0..$#files) {
@@ -85,7 +86,7 @@ sub gen_partial_tags
 
     # file is modified
     if ($file_stat > $tags_stat) {
-      $mod_stat->{files_modified}++;
+      push(@files_modified, $file);
       my $fh;
       my @tags;
       open($fh, '<', 'tags') or croak("Failed to open 'tags' file for reading");
@@ -106,19 +107,21 @@ sub gen_partial_tags
     }
   }
   if (-t 1) { # tty output
-    printf("\n");
+    if ($flags->{v} < 2 || !@files_modified || $files_modified[-1] ne $files[-1]) {
+      printf("\n");
+    }
   }
 
-  if ($mod_stat->{files_modified}) {
+  if (@files_modified) {
     if (-t 1) { # tty output
       if ($flags->{v} >= 1) {
         printf("Files modified %d out of %d in %s\n",
-               $mod_stat->{files_modified}, scalar(@files), $dir);
+               scalar(@files_modified), scalar(@files), $dir);
       }
     } else { # pipe
       if ($flags->{v} >= 2) {
         printf("!Files modified %d out of %d in %s\n",
-               $mod_stat->{files_modified}, scalar(@files), $dir);
+               scalar(@files_modified), scalar(@files), $dir);
       }
     }
     system("touch", "-r", $mod_stat->{file}, "tags");
