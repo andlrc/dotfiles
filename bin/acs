@@ -1,2 +1,2 @@
 #!/bin/sh
-/opt/ibm/iAccessClientSolutions/Start_Programs/Linux_x86-64/acslaunch_linux-64 "$@"
+java -jar "$DW_ROOT/acsbundle.jar" "$@"
