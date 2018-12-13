@@ -38,11 +38,11 @@ alias l='ls -lAh'
 alias grep="grep --color=auto --exclude-dir=.git"
 
 precmd() {
-	find ~/mail/new -mindepth 1 | while read
-	do
-		echo "You have new mail."
-		return
-	done
+	cnt=$(find ~/mail/new -mindepth 1 | wc -l)
+	if test "$cnt" -gt 0
+	then
+		echo "You have new mail ($cnt)."
+	fi
 }
 
 work() {

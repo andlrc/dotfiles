@@ -1,0 +1,3 @@
+#!/bin/sh
+file=$1; shift
+mv "$file" ~/mail/cur

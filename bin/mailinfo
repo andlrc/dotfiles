@@ -1,0 +1,23 @@
+#!/bin/sh
+for file in ~/mail/new/*
+do
+	subject=$(sed '
+		/^Subject: \(.*\)/{
+			s//\1/
+			q
+		}
+		d
+	' "$file")
+	printf -- "%s\\n" "$subject"
+	test -e "$file" || continue
+	echo "File: $file" | sed '
+		/^From: /bp
+		/^Subject: /bp
+		/^To: /bp
+		/^File: /bp
+		d
+		:p
+		s/.*/ | &/
+	' "$file" -
+	printf '\n'
+done
