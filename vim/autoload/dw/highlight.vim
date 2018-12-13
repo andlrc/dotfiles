@@ -1,4 +1,4 @@
-function highlight#String(group, ...)
+function dw#highlight#String(group, ...)
   if a:1 != ''
     call matchadd(a:group, a:1)
   else

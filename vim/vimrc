@@ -25,8 +25,8 @@ augroup ColorChg
   au ColorScheme nofrils-* hi link User1 StatusLineTermNC
   au ColorScheme nofrils-* hi link User2 PmenuSel
 
-  command! -nargs=? Hi1 :call highlight#String('User1', <q-args>)
-  command! -nargs=? Hi2 :call highlight#String('User2', <q-args>)
+  command! -nargs=? Hi1 :call dw#highlight#String('User1', <q-args>)
+  command! -nargs=? Hi2 :call dw#highlight#String('User2', <q-args>)
 augroup END
 let g:nofrils_heavylinenumbers = 1
 colorscheme nofrils-dark
@@ -85,7 +85,7 @@ command! -range=% TR let b:wv = winsaveview() |
                    \ keeppattern <line1>,<line2>s/\\\@<!\s\+$// |
                    \ call winrestview(b:wv)
 
-command! -bang Bump :call version#Bump(<bang>0)
+command! -bang Bump :call dw#version#Bump(<bang>0)
 
 " Folding {{{1
 

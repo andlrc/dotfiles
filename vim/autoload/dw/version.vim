@@ -1,4 +1,4 @@
-function version#Bump(major) abort
+function dw#version#Bump(major) abort
   if &filetype ==# 'perl'
     let pat = '\%(my\|our\)\s\+\$VERSION\s*=\D*'
   elseif &filetype ==# 'sh'
