@@ -1,23 +1,63 @@
-#!/bin/sh
-for file in ~/mail/new/*
-do
-	subject=$(sed '
-		/^Subject: \(.*\)/{
-			s//\1/
-			q
-		}
-		d
-	' "$file")
-	printf -- "%s\\n" "$subject"
-	test -e "$file" || continue
-	echo "File: $file" | sed '
-		/^From: /bp
-		/^Subject: /bp
-		/^To: /bp
-		/^File: /bp
-		d
-		:p
-		s/.*/ | &/
-	' "$file" -
-	printf '\n'
-done
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Carp;
+use MIME::Base64;
+
+sub get_headers
+{
+  my ($fh) = @_;
+
+  my $headers = {};
+
+  my $utf8Q = sub {
+    my ($content) = @_;
+    $content =~ s{_}{ }xmsg;
+    $content =~ s{( (?:= [a-fA-F0-9]{2})+ ) }{pack("H*", $1 =~ s{=}{}xmsgr)}xmseg;
+
+    return $content;
+  };
+
+  my $utf8B = sub {
+    my ($content) = @_;
+    return decode_base64($content);
+  };
+
+  while (<$fh>) {
+    # body ...
+    last if m{ ^ $ }xms;
+
+    # headers ...
+    chomp;
+    if (m{ ^ (\w+) : \s* (.*) }xms) {
+      my $name = $1;
+      my $content = $2;
+      while (<$fh>) {
+        chomp;
+        last unless m{ ^ \s+ (.*) }xms;
+        $content .= $1;
+      }
+      $content =~ s{=\?utf-8\?Q\? (.*?) \?=}{$utf8Q->($1)}xmsegi;
+      $content =~ s{=\?utf-8\?B\? (.*?) \?=}{$utf8B->($1)}xmsegi;
+      $headers->{$name} = $content;
+      redo;
+    }
+  }
+
+  return $headers;
+}
+
+for my $file (glob("~/mail/new/*")) {
+
+  open(my $fh, "<", $file) or croak("Failed to open '$file' for reading");
+  my $headers = get_headers($fh);
+  close($fh) or croak("Failed to close '$file' after reading");
+
+  printf("%s\n", $headers->{Subject});
+  printf(" | From: %s\n", $headers->{From});
+  printf(" | Subject: %s\n", $headers->{Subject});
+  printf(" | To: %s\n", $headers->{To});
+  printf(" | File: %s\n", $file);
+  printf("\n");
+}
