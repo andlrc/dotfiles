@@ -4,6 +4,14 @@ use strict;
 use warnings;
 use Carp;
 use MIME::Base64;
+use Text::Iconv;
+
+sub charconv
+{
+  my ($from, $text) = @_;
+  my $converter = Text::Iconv->new($from, "UTF-8");
+  return $converter->convert($text);
+};
 
 sub get_headers
 {
@@ -11,15 +19,16 @@ sub get_headers
 
   my $headers = {};
 
-  my $utf8Q = sub {
+  my $decodeQ = sub {
     my ($content) = @_;
+
     $content =~ s{_}{ }xmsg;
     $content =~ s{( (?:= [a-fA-F0-9]{2})+ ) }{pack("H*", $1 =~ s{=}{}xmsgr)}xmseg;
 
     return $content;
   };
 
-  my $utf8B = sub {
+  my $decodeB = sub {
     my ($content) = @_;
     return decode_base64($content);
   };
@@ -38,8 +47,8 @@ sub get_headers
         last unless m{ ^ \s+ (.*) }xms;
         $content .= $1;
       }
-      $content =~ s{=\?utf-8\?Q\? (.*?) \?=}{$utf8Q->($1)}xmsegi;
-      $content =~ s{=\?utf-8\?B\? (.*?) \?=}{$utf8B->($1)}xmsegi;
+      $content =~ s{=\?(.*?)\?Q\? (.*?) \?=}{charconv($1, $decodeQ->($2))}xmsegi;
+      $content =~ s{=\?(.*?)\?B\? (.*?) \?=}{charconv($1, $decodeB->($2))}xmsegi;
       $headers->{$name} = $content;
       redo;
     }
