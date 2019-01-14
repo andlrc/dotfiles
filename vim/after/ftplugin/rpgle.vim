@@ -6,6 +6,7 @@ let g:rpgle_indentStart = 0
 setlocal suffixesadd+=.aspx,.asmx
 setlocal includeexpr=RpgleInclude(v:fname)
 setlocal equalprg=rpglefmt\ -Idrupp
+setlocal smartcase
 
 function! RpgleInclude(fname)
   let fname = a:fname
