@@ -1,0 +1,13 @@
+#!/bin/sh
+# Author: Andreas Louv <andreas@louv.dk>
+# Version: 1.0
+# Firefox Session Less
+# This program opens Firefox with a new data directory every time, this means
+# that everytime this program is started it will *not* share any cookies,
+# caches, sessions, etc with any other instance of Firefox
+data_dir=/tmp/firefox-sl.$$
+
+mkdir -p "$data_dir"
+trap 'rm -r "$data_dir" 2> /dev/null' EXIT INT
+
+firefox --new-instance --profile "$data_dir" "$@"

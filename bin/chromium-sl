@@ -5,7 +5,6 @@
 # This program opens chromium with a new data directory every time, this means
 # that everytime this program is started it will *not* share any cookies,
 # caches, sessions, etc with any other instance of chromium
-pgm=${0##*/}
 data_dir=/tmp/chromium-sl.$$
 
 trap 'rm -r "$data_dir" 2> /dev/null' EXIT INT
