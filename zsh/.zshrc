@@ -36,12 +36,26 @@ bindkey '^N' down-line-or-beginning-search
 
 alias l='ls -lAh'
 alias grep="grep --color=auto --exclude-dir=.git"
+alias ed='rlwrap -S: ed'
 
 precmd() {
-	cnt=$(find ~/mail/new -mindepth 1 | wc -l)
-	if test "$cnt" -gt 0
+	if ! test "$silent_mail_info"
 	then
-		echo "You have new mail ($cnt)."
+		cnt=$(find ~/mail/new -mindepth 1 | wc -l)
+		if test "$cnt" -gt 0
+		then
+			echo "You have new mail ($cnt)."
+		fi
+	fi
+}
+
+# Silence mail info
+s() {
+	if test "$silent_mail_info"
+	then
+		unset silent_mail_info
+	else
+		silent_mail_info=Y
 	fi
 }
 
