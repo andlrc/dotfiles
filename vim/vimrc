@@ -43,6 +43,8 @@ nnoremap 1gh :Hi1<Cr>
 nnoremap gh :Hi1<Cr>
 nnoremap 2gh :Hi2<Cr>
 
+setglobal errorformat^=%-Gmake:\ ***%m
+
 " Enhanced % {{{2
 
 packadd! matchit
