@@ -5,6 +5,7 @@ use warnings;
 use Carp;
 use MIME::Base64;
 use Text::Iconv;
+use Getopt::Long qw{ GetOptionsFromArray :config no_ignore_case gnu_compat bundling };
 
 sub charconv
 {
@@ -57,7 +58,17 @@ sub get_headers
   return $headers;
 }
 
-for my $file (glob("~/mail/new/*")) {
+my $flags = {
+  a => 0
+};
+
+GetOptions(
+  'a|all' => \$flags->{a}
+);
+
+my @files = $flags->{a} ? glob("~/mail/cur/*") : glob("~/mail/new/*");
+
+for my $file (@files) {
 
   open(my $fh, "<", $file) or croak("Failed to open '$file' for reading");
   my $headers = get_headers($fh);
