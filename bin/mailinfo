@@ -50,7 +50,7 @@ sub get_headers
       }
       $content =~ s{=\?(.*?)\?Q\? (.*?) \?=}{charconv($1, $decodeQ->($2))}xmsegi;
       $content =~ s{=\?(.*?)\?B\? (.*?) \?=}{charconv($1, $decodeB->($2))}xmsegi;
-      $headers->{$name} = $content;
+      $headers->{lc $name} = $content;
       redo;
     }
   }
@@ -74,10 +74,12 @@ for my $file (@files) {
   my $headers = get_headers($fh);
   close($fh) or croak("Failed to close '$file' after reading");
 
-  printf("%s\n", $headers->{Subject});
-  printf(" | From: %s\n", $headers->{From});
-  printf(" | Subject: %s\n", $headers->{Subject});
-  printf(" | To: %s\n", $headers->{To});
+  printf("%s\n", $headers->{subject});
+  printf(" | Date: %s\n", `date -d '$headers->{date}' | tr -d '\n'`);
+  printf(" | From: %s\n", $headers->{from});
+  printf(" | Subject: %s\n", $headers->{subject});
+  printf(" | To: %s\n", $headers->{to});
+  printf(" | Cc: %s\n", $headers->{cc}) if $headers->{cc};
   printf(" | File: %s\n", $file);
   printf("\n");
 }
