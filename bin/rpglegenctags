@@ -133,7 +133,10 @@ sub gen_tags
 {
   my ($dir) = @_;
   my $prev_dir = getcwd();
-  chdir($dir);
+  if (!chdir($dir)) {
+      print(STDERR "$PGM: $dir: $!\n");
+      return;
+  }
 
   my @files = glob("*.rpgle *.aspx *.asmx *.rpgleinc");
   if (!@files) {
