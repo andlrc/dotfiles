@@ -41,7 +41,7 @@ alias ed='rlwrap -S: ed'
 precmd() {
 	if ! test "$silent_mail_info"
 	then
-		cnt=$(find ~/mail/new -mindepth 1 | wc -l)
+		cnt=$(find ~/mail/new -mindepth 1 | wc -l | tr -d '[:space:]')
 		if test "$cnt" -gt 0
 		then
 			echo "You have new mail ($cnt)."
