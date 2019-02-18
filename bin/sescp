@@ -1,0 +1,46 @@
+#!/bin/sh
+lib=ICEBREAK
+
+from_server=$1; shift
+from_session=$1; shift;
+to_server=$1; shift
+to_session=$1; shift;
+
+oneline()
+{
+        tr '\n' ' ' | sed 's/[[:space:]][[:space:]]*/ /g'
+}
+
+# Delete STMT
+delete_stmt=$(cat << EOF | oneline
+delete from $lib.SEV00
+ where SESEID = '$to_session'
+   and SESVTK in (select SVSVTK
+                    from $lib.SVR00
+                   where SVNAME = '$to_server')
+EOF
+)
+
+# Insert STMT
+insert_stmt=$(cat << EOF | oneline
+insert into $lib.SEV00 (SESVTK, SESEID, SELATS, SENAME, SEVALU)
+select (select SVSVTK
+          from $lib.SVR00
+         where SVNAME = '$to_server'),
+       '$to_session',
+       SELATS,
+       SENAME,
+       SEVALU
+  from $lib.SEV00 where seseid = '$from_session'
+   and SESVTK in (select SVSVTK
+                    from $lib.SVR00
+                   where SVNAME = '$from_server')
+EOF
+)
+
+cat << EOF | ssh dksrv206
+cat << INNER | qsh
+        db2 "$delete_stmt"
+        db2 "$insert_stmt"
+INNER
+EOF
