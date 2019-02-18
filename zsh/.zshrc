@@ -69,6 +69,17 @@ u() {
 	PATH="$PATH"
 }
 
+dc() {
+	if test "$#" -eq 0
+	then
+		echo "running dc with 10 as precision:"
+		echo "$ dc -e10k /dev/stdin"
+		command dc -e10k /dev/stdin
+	else
+		command dc "$@"
+	fi
+}
+
 d() {
 	date +'Week %W, %a %F, %T'
 }
