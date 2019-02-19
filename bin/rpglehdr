@@ -86,10 +86,15 @@ EOF
   ) or exit 1;
 
   while (<>) {
-    if ($. == 1 && $guard) {
-      $ARGV =~ m{ ([^/]+) \. [^/]+ $ }xms;
-      my $guard_name = "$1_def";
-      output("/if not defined($guard_name)\n/define $guard_name\n");
+    if ($. == 1) {
+      if ($indent == 0) {
+        output("**FREE");
+      }
+      if ($guard) {
+        $ARGV =~ m{ ([^/]+) \. [^/]+ $ }xms;
+        my $guard_name = "$1_def";
+        output("/if not defined($guard_name)\n/define $guard_name\n");
+      }
     }
 
     if (m{^ \h* /\* }xms) {
