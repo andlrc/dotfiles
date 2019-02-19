@@ -1,0 +1,65 @@
+#!/usr/bin/env perl
+#
+# Create binder language from ILE RPG programs
+#
+# Usage:
+# 	rpglebinder [--signature=signature] [--help] [--version] files...
+
+use strict;
+use Getopt::Long qw{:config no_ignore_case gnu_compat bundling};
+use warnings;
+
+our $APP     = 'rpglebinder';
+our $VERSION = '0.0.1';
+
+$SIG{__WARN__} = sub
+{
+  my $msg = shift;
+  print STDERR "$APP: $msg";
+};
+
+sub main
+{
+  my $multicomm = 0;
+  my $signature = '';
+
+  GetOptions(
+    "s|signature=s" => \$signature,
+    "h|help" => sub {
+      print <<EOF;
+$APP [--signature=signature] [--help] [--version] files...
+
+  -s, --signature=sig  The signature to use
+  -h, --help           Show this help and exti
+  -V, --version        Output version information
+EOF
+      exit;
+    },
+    "V|version" => sub { printf "%s v%s\n", $APP, $VERSION; exit }
+  ) or exit 1;
+
+  die "Missing an input file" unless $ARGV[0];
+
+  unless ($signature) {
+    $signature = $ARGV[0];
+    $signature =~ s/\..*//;
+  }
+
+  printf("STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('%s')\n", $signature);
+  while (<>) {
+    if (m{^ \h* /\* }xms) {
+      $multicomm = 1;
+    }
+    if ($multicomm) {
+      $multicomm = !m{ \*/ }xms;
+      next;
+    }
+
+    if (m{^ \h* dcl-proc \h+ (\w+) .* \bexport\b }xms) {
+      printf("  EXPORT SYMBOL(\"%s\")\n", uc $1);
+    }
+  }
+  printf("ENDPGMEXP\n");
+};
+
+main
