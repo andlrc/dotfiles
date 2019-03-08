@@ -1,0 +1,34 @@
+#!/bin/bash
+# Usage: work-build "dep1 dep2" command...
+
+dir=${PWD#/mnt/dksrv206}
+dir=/home/and/work/coh-rpgle-build
+
+if test "$#" -lt 2
+then
+	>&2 printf "Usage: %s \"dep1 dep2\" command...\n" "${0##*/}"
+	exit 2
+fi
+
+deps=$1; shift
+
+upload()
+{
+	for dep in "$@"
+	do
+		if ! echo "$dep" | grep -q '.\(mod\|bnddir\|srvpgm\|pgm\|QMAKSRC\|QSRVSRC\)$'
+		then
+			scp "$dep" "dksrv206:$dir/$dep" || exit 1
+		fi
+	done
+}
+
+# $deps should be expanded
+upload $deps
+
+{
+	echo "cd '$dir'"
+	printf "system"
+	printf " %q"  "$@"
+	printf "\n"
+} | ssh -q dksrv206
