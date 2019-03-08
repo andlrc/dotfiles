@@ -84,7 +84,8 @@ inoreabbrev and@ and@sitemule.com
 " Commands {{{1
 
 command! ColorColumn let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''
-command! Syntax      echo synIDattr(synID(line('.'), col('.'), 0), 'name')
+command! Syntax      echo printf('<%s>  %s', expand('<cword>'), synIDattr(synID(line('.'), col('.'), 0), 'name'))
+nnoremap gs :Syntax<Cr>
 
 command! -nargs=? Hi1 :call dw#highlight#String('User1', <q-args>)
 command! -nargs=? Hi2 :call dw#highlight#String('User2', <q-args>)
