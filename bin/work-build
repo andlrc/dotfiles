@@ -1,34 +1,51 @@
 #!/bin/bash
-# Usage: work-build "dep1 dep2" command...
+# Usage: work-build "libA libB" "dep1 dep2" command...
 
-dir=${PWD#/mnt/dksrv206}
 dir=/home/and/work/coh-rpgle-build
 
-if test "$#" -lt 2
+if test "$#" -lt 3
 then
-	>&2 printf "Usage: %s \"dep1 dep2\" command...\n" "${0##*/}"
+	>&2 printf "Usage: %s \"libA libB\" \"dep1 dep2\" command...\n" "${0##*/}"
 	exit 2
 fi
 
-deps=$1; shift
+libl=()
+# Reverse $libl, expand $1
+for lib in $1
+do
+	libl=("$lib" "${libl[@]}")
+done
+shift
 
-upload()
-{
-	for dep in "$@"
+deps=()
+# expand $1
+for dep in $1
+do
+	if ! echo "$dep" | grep -q '.\(mod\|bnddir\|srvpgm\|pgm\|QMAKSRC\|QSRVSRC\)$'
+	then
+		deps+=("$dep")
+	fi
+done
+shift
+
+# upload
+if test "${#deps[@]}" -gt 0
+then
+	scp "${deps[@]}" "dksrv206:$dir/" >/dev/null || exit 1
+fi
+
+cmd=$(
+	for lib in "${libl[@]}"
 	do
-		if ! echo "$dep" | grep -q '.\(mod\|bnddir\|srvpgm\|pgm\|QMAKSRC\|QSRVSRC\)$'
-		then
-			scp "$dep" "dksrv206:$dir/$dep" || exit 1
-		fi
+		printf 'liblist -a %s >/dev/null 2>&1 ||:;' "$lib"
 	done
-}
 
-# $deps should be expanded
-upload $deps
-
-{
-	echo "cd '$dir'"
+	printf "cd '%s';" "$dir"
 	printf "system"
 	printf " %q"  "$@"
-	printf "\n"
-} | ssh -q dksrv206
+	printf ";"
+)
+printf 'qsh -c %q' "$cmd" |
+	ssh -q dksrv206 2>&1 |
+	iconv --from-code=LATIN1 --to-code=UTF-8 - | grep -v '^\(CPC2206:\|CPCA081\)'
+exit "${PIPESTATUS[1]}"
