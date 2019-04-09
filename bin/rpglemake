@@ -1,52 +1,458 @@
-#!/bin/bash
-# Usage rpglemake <file>
-#
-# Author: Andreas Louv <andreas@louv.dk>
-# Version: 1.0
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Getopt::Long qw{:config no_ignore_case gnu_compat bundling};
+use Pod::Usage;
+use POSIX;
 
-bnddir()
+our $PGM = "rpglemake";
+our $VERSION = "1.1";
+
+my $TAB_SIZE = 8;
+my $width = 72;
+my @libl;
+my $outlib = '';
+my $xref;
+
+GetOptions(
+  "l|lible=s@" => \@libl,
+  "o|outlib=s" => \$outlib,
+  "w|width=s" => \$width,
+  "x|cross-ref" => \$xref,
+  "h|help" => sub {
+    pod2usage( -verbose => 99, -sections => "SYNOPSIS|DESCRIPTION" );
+    exit(0);
+  },
+  "V|version" => sub {
+    printf("%s %s\n", $PGM, $VERSION);
+    exit(0);
+  },
+) or exit(2);
+
+@libl = split(",", join(",", @libl));
+
+sub extract_bnddir
 {
-	local file=$1; shift
+  my ($line) = @_;
 
-	grep -i 'ctl-opt' "$file" |
-		grep -o \''[^'\'']\+'\' |
-		grep -o '[^'\'']\+' |
-		while IFS= read -r bnddir
-		do
-			if test -f "${bnddir,,}".srvpgm
-			then
-				echo "${bnddir,,}.bnddir"
-			fi
-		done
+  if (!m{ bnddir \( (.*?) \) }xmsi) {
+    return ();
+  }
+
+  return $1 =~ m{ (?<=') (\w+) (?=') }xmsig;
 }
 
-include()
+sub vlen
 {
-	local file=$1; shift
+  my ($line) = @_;
 
-	sed 's~^\s*/\(include\|copy\)\s\+\(.*\.rpgleinc\)\s*~\2~p;d' "$file"
+  my @line = split(//, $line);
+
+  my $vlen = 0;
+
+  for my $i (0..$#line) {
+    if ($line[$i] eq "\t") {
+      $vlen = floor($vlen / $TAB_SIZE) * $TAB_SIZE + $TAB_SIZE;
+    }
+    else {
+      $vlen += 1;
+    }
+  }
+
+  return $vlen;
 }
 
-for file
-do
-	if ! echo "$file" | grep -q '\.\(rpgle\)'
-	then
-		continue
-	fi
+sub print_var
+{
+  my ($var, @items) = @_;
 
-	mapfile -t deps < <(include "$file")
-	if test "${#deps[@]}" -gt 0
-	then
-		printf "%s.mod:\\t%s\\n" "${file%.*}" "${deps[*]}"
-	fi
+  while(vlen($var) < 16) {
+    $var .= "\t";
+  }
 
-	if ! grep -i 'ctl-opt' "$file" | grep -qi nomain
-	then
-		mapfile -t deps < <(bnddir "$file")
-		if test "${#deps[@]}" -gt 0
-		then
-			printf "%s.pgm:\\t%s\\n" "${file%.rpgle}" "${deps[*]}"
-		fi
-	fi
+  return print_prefixed(sprintf("%s= ", $var), @items);
+}
 
-done
+sub print_prefixed
+{
+  my ($p, @items) = @_;
+
+  if ($#items < 0) {
+    $p =~ s{ \s $ }{}xmsi;
+    print(sprintf("%s\n", $p));
+    return;
+  }
+
+  if ($#items == 0) {
+    print(sprintf("%s%s\n", $p, $items[0]));
+    return;
+  }
+
+  my $max_item_size = (sort({ $b - $a } map({ length($_) } @items)))[0];
+  my $end_col = POSIX::ceil(($max_item_size + vlen($p)) / $TAB_SIZE)
+              * $TAB_SIZE;
+  $end_col = $width if $end_col < $width;
+
+  my $p2 = "\t" x POSIX::floor((vlen($p) / 8));
+  while (vlen($p) > vlen($p2)) {
+    $p2 .= " ";
+  }
+
+  my $out = "";
+  my $line = $p;
+  for my $i (0..$#items) {
+    my $item = $items[$i];
+    if ($i > 0) {
+      $line = $p2;
+    }
+    $line .= "$item";
+    if ($i < $#items) {
+      while (vlen($line) < $end_col) {
+        $line .= "\t";
+      }
+      $line .= "\\";
+    }
+    $out .= $line . "\n";
+  }
+
+  print $out;
+}
+
+my @recipes;
+for (glob("*.sqlrpgle"), glob("*.rpgle")) {
+  my $file = $_;
+
+  my $fh;
+  if (!open($fh, "<", $file)) {
+    warn("$file: $!");
+    next;
+  }
+
+  my $recipe = Recipe->new($file);
+  push(@recipes, $recipe);
+
+  while (<$fh>) {
+    if (m{ ^ \s{5} H \b }xmsi) {
+      if (m{ \b nomain \b}xmsi) {
+        $recipe->srvpgm(1);
+      }
+      my @dirs = extract_bnddir($_);
+      if (@dirs) {
+        $recipe->bnddir(@dirs);
+      }
+    }
+    elsif (m{ ^ \s* ctl-opt \b }xmsi) {
+      if (m{ \b nomain \b}xmsi) {
+        $recipe->srvpgm(1);
+      }
+      my @dirs = extract_bnddir($_);
+      if (@dirs) {
+        $recipe->bnddir(@dirs);
+      }
+    }
+    elsif (m{ ^ \s* (?:/include | /copy) \s+ (.*? \.rpgleinc) }xmsi) {
+      $recipe->include($1);
+    }
+  }
+
+  close($fh);
+}
+
+@recipes = sort({
+  $a->{file} cmp $b->{file};
+} @recipes);
+
+my @srvpgms = grep { $_->{srvpgm} } @recipes;
+my @pgms = grep { !$_->{srvpgm} } @recipes;
+
+print_var("OUTLIB", $outlib);
+print_var("LIBL", @libl);
+
+print_var("RPGFLAGS", "OPTION(*XREF)");
+print_var("SQLFLAGS");
+
+print("\n");
+print_var("SRVPGMS", map {
+  $_->pgmname();
+} @srvpgms);
+
+print("\n");
+print_var("PGMS", map {
+  $_->pgmname();
+} @pgms);
+
+print("\n");
+print_var("BNDDIRS", map {
+  $_->bnddirname();
+} @srvpgms);
+
+print("\n");
+print("# Used for cleanup only\n");
+print_var("SRVSRC", map {
+  $_->srvsrcname();
+} @srvpgms);
+
+print("\n");
+print("# Used for cleanup only\n");
+print_var("MODULES", map {
+  $_->modname();
+} @recipes);
+
+print("\n");
+print("include rpgle.mk\n");
+
+print("\n");
+print("build:\t\$(PGMS) \$(SRVPGMS) \$(BNDDIRS)\n");
+print(".PHONY:\tbuild\n");
+
+print("\n");
+print("# Modules\n");
+for my $recipe (@recipes) {
+  $recipe->dump_module();
+}
+
+print("\n");
+print("# Service Programs\n");
+for my $recipe (@srvpgms) {
+  $recipe->dump_program();
+}
+
+print("\n");
+print("# Programs\n");
+for my $recipe (@pgms) {
+  $recipe->dump_program();
+}
+
+print("\n");
+print("test:\n");
+print("\t# No tests. Tests are for n00bs\n");
+print(".PHONY:\ttest\n");
+
+print("\n");
+print_prefixed("clean:\t", map({
+  sprintf('$(patsubst $(PREFIX)%,$(CLEANPREFIX)%,$(%s)))', $_)
+} qw{ BNDDIRS SRVPGMS PGMS MODULES SRVSRC }));
+print(".PHONY:\tclean\n");
+
+package Recipe;
+
+sub new
+{
+  my $class = shift;
+  my ($file) = @_;
+
+  my $self = {
+    includes => [],
+    bnddirs => [],
+    srvpgm => 0,
+    file => $file
+  };
+
+  bless($self, $class);
+
+  return $self;
+}
+
+sub include
+{
+  my $self = shift;
+  my @includes = @_;
+
+  push(@{$self->{includes}}, @includes);
+}
+
+sub bnddir
+{
+  my $self = shift;
+  my @bnddirs = @_;
+
+  push(@{$self->{bnddirs}}, @bnddirs);
+}
+
+sub srvpgm
+{
+  my $self = shift;
+  my ($srvpgm) = @_;
+
+  $self->{srvpgm} = $srvpgm;
+}
+
+sub pgmname
+{
+  my $self = shift;
+
+  if ($self->{srvpgm}) {
+    return '$(PREFIX)' . $self->{file} =~ s{ \. .*? $ }{.srvpgm}xmsir;
+  }
+
+  return '$(PREFIX)' . $self->{file} =~ s{ \. .*? $ }{.pgm}xmsir;
+}
+
+sub modname
+{
+  my $self = shift;
+
+  return '$(PREFIX)' . $self->{file} =~ s{ \. .*? $ }{.mod}xmsir;
+}
+
+sub bnddirname
+{
+  my $self = shift;
+
+  return '$(PREFIX)' . $self->{file} =~ s{ \. .*? $ }{.bnddir}xmsir;
+}
+
+sub srvsrcname
+{
+  my $self = shift;
+
+  return '$(PREFIX)' . $self->{file} =~ s{ \. .*? $ }{.srvsrc}xmsir;
+}
+
+sub dump_module
+{
+  my $self = shift;
+
+  my $modname = $self->modname();
+  my @includes = sort({
+    $a cmp $b
+  } @{$self->{includes}});
+  if (@includes) {
+    $self->dump_formatted($modname, @includes);
+  }
+  else {
+    $self->dump_formatted($modname);
+  }
+}
+
+sub dump_program
+{
+  my $self = shift;
+
+  my $pgmname = $self->pgmname();
+
+  my @bnddirs;
+  if ($xref) {
+    for my $include (@{$self->{includes}}) {
+      my $found;
+      for my $bnddir (@{$self->{bnddirs}}) {
+        if ($include =~ m{ \b (\Q$bnddir\E) \b }xmsi) {
+          $found = $1;
+          last;
+        }
+      }
+      if (!$found) {
+        for my $bnddir (@{$self->{bnddirs}}) {
+          next if length($bnddir) < 10;
+          if ($include =~ m{ \b (\Q$bnddir\E \w* ) \b }xmsi) {
+            $found = $1;
+            last;
+          }
+        }
+      }
+      if ($found) {
+        push(@bnddirs, $found);
+      }
+    }
+  }
+  else {
+    @bnddirs = @{$self->{bnddirs}};
+  }
+
+  my @args = ();
+  if ($self->{srvpgm}) {
+    push(@args, $self->modname());
+  }
+
+  if (@bnddirs) {
+    my @bnddirs = map({
+      sprintf('|\$(PREFIX)%s.bnddir', $_)
+    } sort({ $a cmp $b } @bnddirs));
+    push(@args, @bnddirs);
+  }
+
+  $self->dump_formatted($pgmname, @args);
+}
+
+sub dump_formatted
+{
+  my $self = shift;
+  my ($name, @lines) = @_;
+
+  my $p = "$name:";
+  if (@lines) {
+    while (main::vlen($p) < 40) {
+      $p .= "\t";
+    }
+  }
+
+  return main::print_prefixed($p, @lines);
+}
+
+__END__
+
+=head1 NAME
+
+rpglemake - Create makefiles from ILE RPG files
+
+=head1 SYNOPSIS
+
+rpglemake [I<OPTIONS>]...
+
+=head1 DESCRIPTION
+
+rpglemake will write a makefile on standard output based on B<sqlrpgle> and
+B<rpgle> files in the current directory.
+
+Mandatory arguments to long options are mandatory for short options too.
+
+=head2 Options
+
+=over 4
+
+=item B<-l>, B<--lible>=I<LIBRARY>
+
+adds a library to the B<LIBL> variable. Can be a comma seperated list of
+libraries, and can be specified multiple times
+
+=item B<-o>, B<--outlib>=I<LIBRARY>
+
+sets the B<OUTLIB> variable
+
+=item B<-w>, B<--width>=I<WIDTH>
+
+sets the default width of the makefile
+
+=item B<-x>, B<--cross-ref>
+
+when on, then binding directories are cross referenced with included files to
+limit the list of dendended binding directories
+
+=item B<-h>, B<--help>
+
+show this help and exit
+
+=item B<-V>, B<--version>
+
+display version information and exit
+
+=back
+
+=head1 ENVIRONMENT VARIABLES
+
+No environment variables are used by this program.
+
+=head1 SEE ALSO
+
+B<make>(1)
+
+=head1 AUTHOR
+
+Andreas Louv <andreas@louv.dk>.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut
