@@ -176,11 +176,11 @@ GetOptions(
 my @dirs;
 if ($flags->{A}) {
   push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
-  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
+  push(@dirs, glob("~/work/gitlab/sitemule/bas/services"));
   push(@dirs, glob("/mnt/dksrv206/www/dev/???/customized/services"));
 } elsif ($flags->{a}) {
   push(@dirs, "/mnt/dksrv206/www/Portfolio/Admin/Services");
-  push(@dirs, "/mnt/dksrv206/www/dev/bas/shared/services");
+  push(@dirs, glob("~/work/gitlab/sitemule/bas/services"));
 }
 
 my $pwd = getcwd();

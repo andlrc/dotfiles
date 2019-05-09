@@ -27,10 +27,10 @@ endfunction
 setlocal keywordprg=man\ -S3,3RPG,3RPGCOMPDIR,3RPGHSPEC
 
 let path = [ '.', '~/.cache/rpgledev',
-        \ '/mnt/dksrv206/www/dev/bas/shared/services',
+        \ '~/work/gitlab/sitemule/bas/services',
         \ '/mnt/dksrv206/www/portfolio/admin/services' ]
 let tags = [ './tags', 'tags',
-        \ '/mnt/dksrv206/www/dev/bas/shared/services/tags',
+        \ '~/work/gitlab/sitemule/bas/services/tags',
         \ '/mnt/dksrv206/www/Portfolio/Admin/services/tags' ]
 
 let lib = substitute(expand('%:p'), '^/mnt/dksrv206/www/dev/\([^/]\+\)/.*', '\1', '')
