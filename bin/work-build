@@ -1,7 +1,8 @@
 #!/bin/bash
 # Usage: work-build "libA libB" "dep1 dep2" command...
 
-dir=/home/and/work/coh-rpgle-build
+destdir=/home/and/work/work-build-dest
+heir=$(git remote get-url origin --all | sed 's/.*://')/services
 
 if test "$#" -lt 3
 then
@@ -31,7 +32,16 @@ shift
 # upload
 if test "${#deps[@]}" -gt 0
 then
-	scp "${deps[@]}" "dksrv206:$dir/" >/dev/null || exit 1
+	tmpdir=$(mktemp -d)
+	mkdir -p "$tmpdir/$heir"
+	for dep in "${deps[@]}"
+	do
+		rdep="$tmpdir/$heir/$dep"
+		mkdir -p "$(dirname "$rdep")"
+		cp "$dep" "$rdep"
+	done
+	rsync -r "$tmpdir/." "dksrv206:$destdir"
+	rm -r "$tmpdir"
 fi
 
 cmd=$(
@@ -40,7 +50,7 @@ cmd=$(
 		printf 'liblist -a %s >/dev/null 2>&1 ||:;' "$lib"
 	done
 
-	printf "cd '%s';" "$dir"
+	printf "cd '%s';" "$destdir/$heir"
 	printf "system"
 	printf " %q"  "$@"
 	printf ";"

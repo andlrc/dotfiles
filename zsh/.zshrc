@@ -62,7 +62,7 @@ s() {
 work() {
 	CDPATH="$CDPATH${CDPATH:+:}/mnt/dksrv206/www/dev"
 	export SYSTEM='work-build "$(LIBL)" ""'
-	export SYSTEM_UP='work-build "$(LIBL)" "$?"'
+	export SYSTEM_UP='work-build "$(LIBL)" "$^"'
 }
 
 u() {
