@@ -138,7 +138,7 @@ sub gen_tags
       return;
   }
 
-  my @files = glob("*.rpgle *.aspx *.asmx *.rpgleinc");
+  my @files = glob("*.rpgle *.sqlrpgle *.aspx *.asmx *.rpgleinc");
   if (!@files) {
     if (-t 1) { # tty output
       printf("No files to check in '%s'\n", $dir);
