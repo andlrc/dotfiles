@@ -1,4 +1,4 @@
-! Remap <CapsLock> so that we can type æøå by pressing <Control>+;'[
+! Remap <CapsLock> so that we can type æøå by pressing <CapsLock>+;'[
 clear lock
 keycode 66 = Mode_switch
 
