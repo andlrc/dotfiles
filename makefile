@@ -20,10 +20,9 @@ clean:
 	-rm ~/.xmodmap
 	-rm ~/.config/fontconfig/config
 	-rmdir ~/.config/fontconfig
-	-rm ~/.mailcap
 
 .PHONY:	all clean wm i3 irc irssi shell zsh editor vim config ctags	\
-	git X fontconfig mail devel
+	git X fontconfig devel
 
 # WM {{{
 
@@ -33,7 +32,7 @@ i3:	$P/i3 $P/i3lock $P/i3status $P/xautolock $P/amixer $P/dmenu	\
 	$P/dmenu $P/feh $P/redshift $P/scrot $P/xclip $P/xdotool 	\
 	$P/unclutter /usr/share/fonts/TTF/fontawesome-webfont.ttf	\
 	~/.config/i3/config ~/.i3status.conf /usr/share/fonts/noto	\
-	$P/pulseaudio
+	$P/pulseaudio $P/epdfview
 
 ~/.config/i3/config:	$(DW)/i3/i3.cfg
 	mkdir -p ~/.config/i3
@@ -87,6 +86,9 @@ $P/unclutter:|	$P/yaourt
 $P/pulseaudio:
 	sudo pacman -S pulseaudio
 
+$P/epdfview:
+	sudo pacman -S epdfview
+
 # IRC {{{1
 
 irc:	irssi
@@ -128,7 +130,7 @@ $P/ed:
 
 # Config {{{1
 
-config:	ctags git X readline ~/.indent.pro fontconfig mail
+config:	ctags git X readline ~/.indent.pro fontconfig
 
 ctags:	$P/ctags $P/rpglectags ~/.ctags
 
@@ -170,27 +172,6 @@ fontconfig:	~/.config/fontconfig/config
 ~/.config/fontconfig/config:	$(DW)/fontconfig/fontconfig.xml
 	mkdir -p ~/.config/fontconfig
 	ln -s $< $@
-
-mail:	$P/mutt $P/w3m $P/urlview $P/epdfview ~/.mailcap ~/.mutt/muttrc
-
-~/.mailcap:	$(DW)/mail/mailcap
-	ln -s $< $@
-
-~/.mutt/muttrc:	$(DW)/mail/muttrc
-	mkdir -p ~/.mutt
-	ln -s $< $@
-
-$P/mutt:
-	sudo pacman -S mutt
-
-$P/w3m:
-	sudo pacman -S w3m
-
-$P/urlview:|	$P/yaourt
-	yaourt -S urlview
-
-$P/epdfview:
-	sudo pacman -S epdfview
 
 # Development {{{1
 

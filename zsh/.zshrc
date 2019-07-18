@@ -39,23 +39,23 @@ alias grep="grep --color=auto --exclude-dir=.git"
 alias ed='rlwrap -S: ed'
 
 precmd() {
-	if ! test "$silent_mail_info"
+	if ! test "$silent_precmd_info"
 	then
-		cnt=$(find ~/mail/new -mindepth 1 | wc -l | tr -d '[:space:]')
-		if test "$cnt" -gt 0
+		# Directory Notes
+		if test -f .NOTES
 		then
-			echo "You have new mail ($cnt)."
+			cat .NOTES
 		fi
 	fi
 }
 
 # Silence mail info
 s() {
-	if test "$silent_mail_info"
+	if test "$silent_precmd_info"
 	then
-		unset silent_mail_info
+		unset silent_precmd_info
 	else
-		silent_mail_info=Y
+		silent_precmd_info=Y
 	fi
 }
 
