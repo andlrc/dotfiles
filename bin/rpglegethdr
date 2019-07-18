@@ -42,13 +42,15 @@ then
   exit 2
 fi
 
+files=(QASPHDR QRPGLESRC QRPGSRC QRPGHDR)
+
 main()
 {
   local remote_file local_file
   local remote_member local_member remote_temp_file
   for lib
   do
-    for file in QASPHDR QRPGLESRC QRPGSRC QRPGHDR
+    for file in "${files[@]}"
     do
       remote_file="/QSYS.LIB/$lib.LIB/$file.FILE"
       local_file=$(echo "$outdir/$lib.LIB/$file.FILE" | tr '[:upper:]' '[:lower:]')
