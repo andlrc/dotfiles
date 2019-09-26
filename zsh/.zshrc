@@ -3,7 +3,7 @@ setopt RM_STAR_SILENT
 
 # cd
 setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHDMINUS
-CDPATH="$HOME/work"
+CDPATH="$HOME/work/gitlab:$HOME/work/github"
 
 # history
 setopt HIST_IGNORE_SPACE
@@ -59,12 +59,6 @@ s() {
 	fi
 }
 
-work() {
-	CDPATH="$CDPATH${CDPATH:+:}/mnt/dksrv206/www/dev"
-	export SYSTEM='work-build "$(LIBL)" ""'
-	export SYSTEM_UP='work-build "$(LIBL)" "$^"'
-}
-
 u() {
 	PATH="$PATH"
 }
@@ -83,3 +77,12 @@ dc() {
 d() {
 	date +'Week %W, %a %F, %T'
 }
+
+screenshot()
+{
+	import "$@" png:- | xclip -sel clip -t image/png
+}
+
+# Used by AS/400 makefiles
+export SYSTEM='work-build "$(LIBL)" ""'
+export SYSTEM_UP='work-build "$(LIBL)" "$^"'
