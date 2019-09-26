@@ -3,11 +3,20 @@
 use strict;
 use warnings;
 
+use List::Util qw{ min };
+
 my $buffer = '';
 $buffer .= $_ while (<>);
 
-$buffer =~ s{ ` (.*?) ` }{"'". tplexpr($1) ."'"}xmseg;
-$buffer =~ s{ ^(.{77}) \s+ -$ }{$1 -}xmg;
+my $qix = index($buffer, "'");
+my $bix = index($buffer, "\`");
+
+if ($qix > -1 && ($bix == -1 || $qix < $bix)) {
+  $buffer =~ s{ ' (.*) ' }{"\`". tplexpr2($1) ."\`"}xmseg;
+} else {
+  $buffer =~ s{ ` (.*?) ` }{"'". tplexpr($1) ."'"}xmseg;
+  $buffer =~ s{ ^(.{77}) \s+ -$ }{$1 -}xmg;
+}
 
 print $buffer;
 
@@ -17,7 +26,18 @@ sub tplexpr
 
   $match =~ s{ ' }{''}xmsg;
   $match =~ s{ \$\{ (.*?) \} }{"' + ". ($1 =~ s/''/'/xmsrg) ." + '"}xmseg;
-  $match =~ s{ ^(.*?)\n }{$1 ." "x(77-length($1)) . " -\n"}xmseg;
+  $match =~ s{ ^(.*?)\n }{$1 ." "x(78-min(77, length($1))) . "-\n"}xmseg;
+
+  return $match;
+}
+
+sub tplexpr2
+{
+  my ($match) = @_;
+
+  $match =~ s{ \s* - \n }{\n}xmsg;
+  $match =~ s{ (?<!')'\s\+ \s* (.*?) \s* \+\s'(?!') }{"\${" . ($1 =~ s/'/''/xmsrg) . "}"}xmseg;
+  $match =~ s{ '' }{'}xmsg;
 
   return $match;
 }
