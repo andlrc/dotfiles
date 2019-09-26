@@ -1,0 +1,55 @@
+#!/bin/sh
+
+z_interactive=0
+z_verbose=0
+
+usage()
+{ printf "Usage: %s -[ivh]\n" "${0##*/}"
+}
+
+while getopts "ivh" opt
+do
+	case "$opt" in
+		i)
+			z_interactive=1
+			;;
+		v)
+			z_verbose=1
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		*)
+			usage >&2
+			exit 2
+			;;
+	esac
+done
+
+for undo_file in ~/.vim/undo/"$(pwd | sed 's~/~%~g')%"*
+do
+	[ -e "$undo_file" ] || continue
+
+	real_file=$(echo "${undo_file##*/}" | sed 's~%~/~g' | sed 's~'"$PWD"/'~~')
+
+	# Expand "$rm_opts"
+	if [ "$z_interactive" -gt 0 ]
+	then
+		>&2 printf "%s: clear undos for '%s'?\n" "${0##*/}" "$real_file"
+		read -r answer
+		case "$answer" in
+			[yY1])
+				;;
+			*)
+				continue
+				;;
+		esac
+	fi
+
+	if rm "$undo_file" && [ "$z_verbose" -gt 0 ]
+	then
+		printf "%s: cleared '%s'\n" "${0##*/}" "$real_file"
+	fi
+
+done
