@@ -50,14 +50,31 @@ exe 'setlocal tags=' . join(tags, ',')
 au CursorMoved <buffer> call <SID>TrackRpgleVar()
 au CursorMovedI <buffer> call <SID>TrackRpgleVar()
 
+function s:IsValidSyntax(lnum, col) abort
+  let syntax = synIDattr(synID(a:lnum, a:col, 0), 'name')
+
+  " In the correct scope in the file
+  return index([
+  \    'ibTplExpr',
+  \    'rpgleDclParenBalance',
+  \    'rpgleDclProcBody',
+  \    'rpgleDclProcName',
+  \    'rpgleDclSpec',
+  \    'rpgleDo',
+  \    'rpgleFor',
+  \    'rpgleIf',
+  \    'rpgleParenBalance',
+  \    'rpgleProcCall',
+  \    'rpgleSelect',
+  \    'xxx', ''
+  \ ], syntax) > -1
+endfunction
+
 function s:GetCursorInfo() abort
   let curline = getline('.')
   let curcol = col('.')
 
-  let syntax = synIDattr(synID(line('.'), col('.'), 0), 'name')
-
-  " Not the correct scope in the file
-  if index(['ibTplExpr', 'rpgleDclSpec', 'rpgleDclProcName', 'rpgleDclProcBody', 'rpgleIf', 'rpgleDo', 'rpgleFor', 'rpgleSelect', 'rpgleProcCall', 'xxx', 'rpgleParenBalance', 'rpgleDclParenBalance'], syntax) == -1
+  if !s:IsValidSyntax(line('.'), col('.'))
     return
   endif
 
@@ -77,7 +94,7 @@ function s:GetCursorInfo() abort
   \        '\%(\s*(\s*\(\k\+\)\s*)\)\=',
   \        '\.',
   \    '\)\=',
-  \    '\(\k*\%' . curcol . 'v\k\+\)',
+  \    '\(\k*\%' . curcol . 'c\k\+\)',
   \     '\(\s*(\s*\k\+\s*)\)\=',
   \     '\(\s*(\)\=',
   \ ], '')
@@ -104,54 +121,139 @@ function s:GetCursorInfo() abort
     let ident_type = 'ident'
   endif
 
-  return {
-  \    'ident': ident,
-  \    'ident_type': ident_type,
-  \    'ds': ds
-  \ }
-endfunction
-
-let b:match_id = 0
-let b:match_regex = ''
-function s:TrackRpgleVar() abort
-  if b:match_id > 0
-    try
-      call matchdelete(b:match_id)
-    catch /./
-    endtry
-    let b:match_id = 0
-  endif
-
-  let var = s:GetCursorInfo()
-
-  if empty(var)
-    " clear status
-    echo ''
+  " Ignore datastructure fields
+  if len(ds) > 0
     return
   endif
 
-  let dsprefix = join(map(var.ds, { key, val -> val[0] . (val[1] != '' ? '(\s*' . val[1] . '\s*)' : '') }), '.')
+  let dsprefix = join(map(ds, { key, val -> val[0] . (val[1] != '' ? '(\s*' . val[1] . '\s*)' : '') }), '.')
   if dsprefix != ''
     let dsprefix = dsprefix . '.'
   endif
 
-  echo printf('ds = %s, ident = %s, ident_type = %s', var.ds, var.ident, var.ident_type)
+  " Regex
+  let regex = '\%(\.\s*\)\@2<!\<' . dsprefix . ident . '\>'
 
-  let b:match_regex = '\%(\.\s*\)\@2<!\<' . dsprefix . var.ident . '\>'
-  let b:match_id = matchadd('rpgleTrackedVar', b:match_regex, -1)
+  " Positions
+  let positions = []
+  let save = winsaveview()
+
+  call search('^\s*dcl-proc', 'b')
+  let stopline = searchpos('^\s*end-proc', 'n')[0]
+
+  let [decl_lnum, decl_col] = searchpos('^\s*\%(dcl-\%(ds\|s\|c\)\s\+\)\=\zs' . regex . '\s\+\k\+', 'n', stopline)
+  if decl_lnum == 0
+    normal! 1G
+    let [decl_lnum, decl_col] = searchpos('^\s*\%(dcl-\%(ds\|s\|c\)\s\+\)\=\zs' . regex . '\s\+\k\+', 'n', stopline)
+    let stopline = line('$')
+    let global = 1
+
+  else
+    let global = 0
+  endif
+
+  " Properly a procedure and not an array
+  if decl_lnum == 0 && ident_type == 'array'
+    let ident_type = 'proc'
+  endif
+
+  let [lnum, col] = searchpos(regex, '', stopline)
+  let [first_lnum, first_col] = [lnum, col]
+  while lnum && col
+    if s:IsValidSyntax(lnum, col)
+      call add(positions, [lnum, col])
+    endif
+    let [lnum, col] = searchpos(regex, '', stopline)
+    if lnum == first_lnum && col == first_col
+      break
+    endif
+  endwhile
+  call winrestview(save)
+
+  return {
+  \    'ident': ident,
+  \    'ident_type': ident_type,
+  \    'ds': ds,
+  \    'declpos': [decl_lnum, decl_col],
+  \    'global': global,
+  \    'positions': positions,
+  \    'regex': regex
+  \ }
 endfunction
 
-nnoremap * :call <SID>HighlightVar(1)<cr>
-nnoremap # :call <SID>HighlightVar(0)<cr>
+let b:match_ids = []
+function s:TrackRpgleVar() abort
+  if !empty(b:match_ids)
+    try
+      for match_id in b:match_ids
+        call matchdelete(match_id)
+      endfor
+    catch /./
+    endtry
+    let b:match_ids = []
+  endif
+
+  let var = s:GetCursorInfo()
+
+  if empty(var) || var.ident_type == 'proc'
+    echo ''
+    return
+  endif
+
+  if var.declpos[0] == 0
+    echo printf("Externally defined variable that is referenced %d times",
+    \    len(var.positions))
+  else
+    echo printf("%s variable that is referenced %d times",
+    \    var.global ? 'Global' : 'Local',
+    \    len(var.positions) - 1)
+  endif
+
+  for [lnum, col] in var.positions
+      let regex = '\%' . lnum . 'l\%' . col . 'c' . var.regex
+      call add(b:match_ids, matchadd('rpgleTrackedVar', regex, -1))
+  endfor
+endfunction
+
+nnoremap <buffer> * :call <SID>HighlightVar(1)<cr>
+nnoremap <buffer> # :call <SID>HighlightVar(0)<cr>
+nnoremap <buffer> gd :call <SID>GotoDecl()<cr>
+
+function s:GotoDecl() abort
+  let var = s:GetCursorInfo()
+
+  if empty(var) || var.declpos[0] == 0
+    execute 'keepj normal [[/\<' . expand('<cword>') . '\>/' . "\r"
+    return
+  else
+    let regex = join([
+    \    '\%(',
+    \      join(map(var.positions, {k,v -> printf('\%%%dl\%%%dc', v[0], v[1]) }), '\|'),
+    \    '\)',
+    \    var.regex
+    \ ], '')
+    let @/ = regex
+    execute printf('normal! %dG0', var.declpos[0])
+    call feedkeys('/' . regex . "\<cr>hl")
+  endif
+endfunction
 
 function s:HighlightVar(forward)
-  if b:match_id > 0
-    let regex = b:match_regex
-  else
+  let var = s:GetCursorInfo()
+
+  if empty(var)
     let regex = '\<' . expand('<cword>') . '\>'
+  else
+    let regex = join([
+    \    '\%(',
+    \      join(map(var.positions,
+    \           { key, val -> '\%'.val[0].'l\%'.val[1].'c'}), '\|'),
+    \    '\)',
+    \    var.regex
+    \ ], '')
   endif
 
   let dir = a:forward ? '/' : 'Bb?'
   let @/ = regex
-  call feedkeys(dir . regex . "\<cr>")
+  call feedkeys(dir . regex . "\<cr>hl")
 endfunction
