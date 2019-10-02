@@ -21,6 +21,7 @@ set listchars+=tab:\|\
 
 augroup ColorChg
   au!
+  au ColorScheme andlrc hi rpgleTrackedVar term=bold cterm=bold ctermfg=9 ctermbg=NONE
 augroup END
 colorscheme andlrc
 
