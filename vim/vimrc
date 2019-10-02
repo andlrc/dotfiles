@@ -21,12 +21,8 @@ set listchars+=tab:\|\
 
 augroup ColorChg
   au!
-  au ColorScheme nofrils-* hi rpgleString term=italic cterm=italic gui=italic
-  au ColorScheme nofrils-* hi link User1 StatusLineTermNC
-  au ColorScheme nofrils-* hi link User2 PmenuSel
 augroup END
-let g:nofrils_heavylinenumbers = 1
-colorscheme nofrils-dark
+colorscheme andlrc
 
 " Searching, Navigating and Compiling Files {{{1
 
