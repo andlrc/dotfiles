@@ -29,8 +29,6 @@ function! RpgleInclude(fname)
   return fname
 endfunction
 
-setlocal keywordprg=man\ -S3,3RPG,3RPGCOMPDIR,3RPGHSPEC
-
 let path = [ '.', '~/.cache/rpgledev',
         \ '~/work/gitlab/sitemule/bas/services',
         \ '/mnt/dksrv206/www/portfolio/admin/services' ]
