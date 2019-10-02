@@ -6,10 +6,15 @@ let g:rpgle_indentStart = 0
 setlocal suffixesadd+=.aspx,.asmx
 setlocal includeexpr=RpgleInclude(v:fname)
 setlocal equalprg=rpglefmt\ -Idrupp
-setlocal smartcase
+setlocal ignorecase
 
 function! RpgleInclude(fname)
   let fname = a:fname
+
+  if filereadable(fname)
+    return fname
+  endif
+
   let fname = substitute(fname, '/', '.lib/', '')
   let fname = substitute(fname, ',', '.file/', '')
   let path = findfile(fname, &path)
@@ -32,13 +37,6 @@ let path = [ '.', '~/.cache/rpgledev',
 let tags = [ './tags', 'tags',
         \ '~/work/gitlab/sitemule/bas/services/tags',
         \ '/mnt/dksrv206/www/Portfolio/Admin/services/tags' ]
-
-let lib = substitute(expand('%:p'), '^/mnt/dksrv206/www/dev/\([^/]\+\)/.*', '\1', '')
-if lib != expand('%:p')
-  call add(path, '~/.cache/rpgledev/' . lib . 'dev.lib')
-  call add(path, '~/.cache/rpgledev/' . lib . 'dev.lib/*.file')
-  call add(tags, '~/.cache/rpgledev/' . lib . 'dev.lib/tags')
-endif
 
 for lib in ['basdev', 'portfolio', 'icebreak']
   call add(path, '~/.cache/rpgledev/' . lib . '.lib')
