@@ -1,0 +1,12 @@
+#!/bin/sh
+
+for undo_file in ~/.vim/undo/"$(pwd | sed 's~/~%~g')%"*
+do
+	[ -e "$undo_file" ] || continue
+
+	real_file=$(echo "${undo_file##*/}" | sed 's~%~/~g' | sed 's~'"$PWD"/'~~')
+	
+	[ -e "$real_file" ] || continue
+
+	printf "%s\n" "$real_file"
+done
