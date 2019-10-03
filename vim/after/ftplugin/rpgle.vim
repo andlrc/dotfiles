@@ -56,7 +56,6 @@ function s:IsValidSyntax(lnum, col) abort
   \    'ibTplExpr',
   \    'rpgleDclParenBalance',
   \    'rpgleDclProcBody',
-  \    'rpgleDclProcName',
   \    'rpgleDclSpec',
   \    'rpgleDo',
   \    'rpgleFor',
@@ -192,6 +191,7 @@ function s:TrackRpgleVar() abort
   endif
 
   let var = s:GetCursorInfo()
+  let b:current_var = var
 
   if empty(var) || var.ident_type == 'proc'
     echo ''
@@ -213,12 +213,43 @@ function s:TrackRpgleVar() abort
   endfor
 endfunction
 
-nnoremap <buffer> * :call <SID>HighlightVar(1)<cr>
-nnoremap <buffer> # :call <SID>HighlightVar(0)<cr>
 nnoremap <buffer> gd :call <SID>GotoDecl()<cr>
+nnoremap <buffer> cv :call <SID>ChangeVar()<cr>
+
+function s:ChangeVar() abort
+  let var = s:GetCursorInfo()
+  let b:current_var = var
+
+  if empty(var) || var.ident_type == 'proc'
+    echo ''
+    return
+  endif
+
+  if var.declpos[0] == 0
+    " Externally defined, cannot rename
+    echohl Warning
+    echom printf('%s is externally defined, and cannot be renamed')
+    echohl None
+    return
+  endif
+
+  let regex = join([
+  \    '\%(',
+  \      join(map(var.positions, {k,v -> printf('\%%%dl\%%%dc', v[0], v[1]) }), '\|'),
+  \    '\)',
+  \    var.regex
+  \ ], '')
+
+  let new_name = input('Variable name: ')
+  if new_name != ''
+    let save = winsaveview()
+    execute '%s~' . regex . '~' . new_name . '~g'
+    call winrestview(save)
+  endif
+endfunction
 
 function s:GotoDecl() abort
-  let var = s:GetCursorInfo()
+  let var = get(b:, 'current_var')
 
   if empty(var) || var.declpos[0] == 0
     execute 'keepj normal [[/\<' . expand('<cword>') . '\>/' . "\r"
@@ -234,24 +265,4 @@ function s:GotoDecl() abort
     execute printf('normal! %dG0', var.declpos[0])
     call feedkeys('/' . regex . "\<cr>hl")
   endif
-endfunction
-
-function s:HighlightVar(forward)
-  let var = s:GetCursorInfo()
-
-  if empty(var)
-    let regex = '\<' . expand('<cword>') . '\>'
-  else
-    let regex = join([
-    \    '\%(',
-    \      join(map(var.positions,
-    \           { key, val -> '\%'.val[0].'l\%'.val[1].'c'}), '\|'),
-    \    '\)',
-    \    var.regex
-    \ ], '')
-  endif
-
-  let dir = a:forward ? '/' : 'Bb?'
-  let @/ = regex
-  call feedkeys(dir . regex . "\<cr>hl")
 endfunction
