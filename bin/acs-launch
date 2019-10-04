@@ -1,8 +1,14 @@
 #!/bin/sh
 
 session_dir="$HOME/IBM/iAccessClient/Emulator"
+
+if command -v gsed > /dev/null
+then
+	sed=gsed
+fi
+
 opts=$(printf "NEW\n%s" "$(find "$session_dir" -type f -name "*.hod" -print \
-	| sed 's~.*/\(.*\)\..*~\U\1~')" | sort)
+	| "${sed:-"sed"}" 's~.*/\(.*\)\..*~\U\1~')" | sort)
 
 ans="$(printf "%s" "$opts" | dmenu -i -p "Which emulator to start?")"
 
