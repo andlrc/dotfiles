@@ -227,8 +227,8 @@ function s:ChangeVar() abort
 
   if var.declpos[0] == 0
     " Externally defined, cannot rename
-    echohl Warning
-    echom printf('%s is externally defined, and cannot be renamed')
+    echohl WarningMsg
+    echo printf('%s is externally defined, and cannot be renamed', var.ident)
     echohl None
     return
   endif
