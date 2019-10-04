@@ -57,5 +57,5 @@ cmd=$(
 )
 printf 'qsh -c %q' "$cmd" |
 	ssh -q dksrv206 2>&1 |
-	iconv -f LATIN1 -t UTF-8 | grep -v '^\(CPC2206:\|CPCA081\)'
+	iconv -f LATIN1 -t UTF-8 | grep -v '^\(CPC2206:\|CPI2119\|CPCA081\)'
 exit "${PIPESTATUS[1]}"
