@@ -48,10 +48,10 @@ exe 'setlocal tags=' . join(tags, ',')
 au CursorMoved <buffer> call <SID>TrackRpgleVar()
 au CursorMovedI <buffer> call <SID>TrackRpgleVar()
 
-function s:IsValidSyntax(lnum, col) abort
+" Variables can only be defined and referenced from specific syntax ID's.
+function! s:IsValidSyntax(lnum, col) abort
   let syntax = synIDattr(synID(a:lnum, a:col, 0), 'name')
 
-  " In the correct scope in the file
   return index([
   \    'ibTplExpr',
   \    'rpgleDclParenBalance',
@@ -67,7 +67,31 @@ function s:IsValidSyntax(lnum, col) abort
   \ ], syntax) > -1
 endfunction
 
-function s:GetCursorInfo() abort
+function! s:FindDecl(regex, stopline, global) abort
+  " dcl-ds, dcl-s, dcl-c
+  let pos = searchpos('^\s*dcl-\%(ds\|s\|c\)\s\+\zs' . a:regex, 'n', a:stopline)
+  if pos[0] > 0
+    return pos
+  endif
+
+  " dcl-pi ... name type ... end-pi
+  if !a:global
+    let save = winsaveview()
+    if searchpos('^\s*dcl-pi\>', '', a:stopline)[0] > 0
+      let stopline = searchpos('^\s*end-pi\>', 'n', a:stopline)[0]
+      let pos = searchpos('^\s*\zs' . a:regex, 'n', stopline)
+    endif
+    call winrestview(save)
+    if pos[0] > 0
+      return pos
+    endif
+  endif
+
+  " not found
+  return [0, 0]
+endfunction
+
+function! s:GetCursorInfo() abort
   let curline = getline('.')
   let curcol = col('.')
 
@@ -118,7 +142,7 @@ function s:GetCursorInfo() abort
     let ident_type = 'ident'
   endif
 
-  " Ignore datastructure fields
+  " Ignore data structure fields
   if len(ds) > 0
     return
   endif
@@ -138,11 +162,13 @@ function s:GetCursorInfo() abort
   call search('^\s*dcl-proc', 'b')
   let stopline = searchpos('^\s*end-proc', 'n')[0]
 
-  let [decl_lnum, decl_col] = searchpos('^\s*\%(dcl-\%(ds\|s\|c\)\s\+\)\=\zs' . regex . '\s\+\k\+', 'n', stopline)
+  " Search from procedure start
+  let [decl_lnum, decl_col] = s:FindDecl(regex, stopline, 0)
   if decl_lnum == 0
+    " Search from file start
     normal! 1G
-    let [decl_lnum, decl_col] = searchpos('^\s*\%(dcl-\%(ds\|s\|c\)\s\+\)\=\zs' . regex . '\s\+\k\+', 'n', stopline)
     let stopline = line('$')
+    let [decl_lnum, decl_col] = s:FindDecl(regex, stopline, 1)
     let global = 1
 
   else
@@ -179,7 +205,7 @@ function s:GetCursorInfo() abort
 endfunction
 
 let b:match_ids = []
-function s:TrackRpgleVar() abort
+function! s:TrackRpgleVar() abort
   if !empty(b:match_ids)
     try
       for match_id in b:match_ids
@@ -216,7 +242,7 @@ endfunction
 nnoremap <buffer> gd :call <SID>GotoDecl()<cr>
 nnoremap <buffer> cv :call <SID>ChangeVar()<cr>
 
-function s:ChangeVar() abort
+function! s:ChangeVar() abort
   let var = s:GetCursorInfo()
   let b:current_var = var
 
@@ -248,7 +274,7 @@ function s:ChangeVar() abort
   endif
 endfunction
 
-function s:GotoDecl() abort
+function! s:GotoDecl() abort
   let var = get(b:, 'current_var')
 
   if empty(var) || var.declpos[0] == 0
