@@ -2,6 +2,8 @@
 setlocal errorformat+=%f:%l.%v-%m
 setlocal keywordprg=man\ -S2:3:3p
 
+setlocal shiftwidth=4 smarttab
+
 setlocal smarttab shiftwidth=4
 
 " Jump between returns
