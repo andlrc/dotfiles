@@ -58,6 +58,7 @@ set wildignorecase
 set suffixes^=,			" Files without extension
 set suffixes-=.h
 set completeopt-=preview
+set complete-=t			" Don't scan tag files
 
 " Dummy files to keep "make(1)" happy
 set wildignore=*.srvpgm,*.pgm,*.mod,*.bnddir
