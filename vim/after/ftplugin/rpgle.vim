@@ -29,9 +29,7 @@ function! RpgleInclude(fname)
   return fname
 endfunction
 
-let path = [ '.', '~/.cache/rpgledev',
-        \ '~/work/gitlab/sitemule/bas/services',
-        \ '/mnt/dksrv206/www/portfolio/admin/services' ]
+let path = [ '.', '~/.cache/rpgledev' ]
 let tags = [ './tags', 'tags',
         \ '~/work/gitlab/sitemule/bas/services/tags',
         \ '/mnt/dksrv206/www/Portfolio/Admin/services/tags' ]
@@ -42,8 +40,8 @@ for lib in ['basdev', 'portfolio', 'icebreak']
   call add(tags, '~/.cache/rpgledev/' . lib . '.lib/tags')
 endfor
 
-exe 'setlocal path=' . join(path, ',')
-exe 'setlocal tags=' . join(tags, ',')
+let &l:path = join(path, ',')
+let &l:tags = join(tags, ',')
 
 au CursorMoved <buffer> call <SID>TrackRpgleVar()
 au CursorMovedI <buffer> call <SID>TrackRpgleVar()
