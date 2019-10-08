@@ -57,6 +57,7 @@ function! s:IsValidSyntax(lnum, col) abort
   \    'rpgleDclParenBalance',
   \    'rpgleDclProcBody',
   \    'rpgleDclSpec',
+  \    'rpgleDclPropName',
   \    'rpgleDo',
   \    'rpgleFor',
   \    'rpgleIf',
