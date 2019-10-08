@@ -40,8 +40,9 @@ for lib in ['basdev', 'portfolio', 'icebreak']
   call add(tags, '~/.cache/rpgledev/' . lib . '.lib/tags')
 endfor
 
-let &l:path = join(path, ',')
-let &l:tags = join(tags, ',')
+" Need to execute to expand the tilde (~)
+exe 'setlocal path=' . join(path, ',')
+exe 'setlocal tags=' . join(tags, ',')
 
 au CursorMoved <buffer> call <SID>TrackRpgleVar()
 au CursorMovedI <buffer> call <SID>TrackRpgleVar()
