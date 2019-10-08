@@ -15,13 +15,13 @@ set nrformats-=octal
 set notitle
 
 set undofile undodir^=~/.vim/undo//
-set directory^=~/.vim/swap//
 
 set listchars+=tab:\|\ 
 
 augroup ColorChg
   au!
   au ColorScheme andlrc hi rpgleTrackedVar term=bold cterm=bold ctermfg=9 ctermbg=NONE
+  au ColorScheme andlrc hi Highlight ctermfg=15 ctermbg=4
 augroup END
 colorscheme andlrc
 
@@ -35,10 +35,6 @@ setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags,js.tags,html.tags}
 
 nnoremap gb :ls<cr>:b<space>
 nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
-
-nnoremap 1gh :Hi1<Cr>
-nnoremap gh :Hi1<Cr>
-nnoremap 2gh :Hi2<Cr>
 
 setglobal errorformat^=%-Gmake:\ ***%m
 
@@ -85,8 +81,8 @@ command! ColorColumn let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''
 command! Syntax      echo printf('<%s>  %s', expand('<cword>'), synIDattr(synID(line('.'), col('.'), 0), 'name'))
 nnoremap gs :Syntax<Cr>
 
-command! -nargs=? Hi1 :call dw#highlight#String('User1', <q-args>)
-command! -nargs=? Hi2 :call dw#highlight#String('User2', <q-args>)
+command! -nargs=? Highlight :call dw#highlight#String('Highlight', <q-args>)
+nnoremap gh :Highlight<cr>
 
 command! -range=% TR let b:wv = winsaveview() |
                    \ keeppattern <line1>,<line2>s/\\\@<!\s\+$// |
