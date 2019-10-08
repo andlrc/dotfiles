@@ -3,6 +3,13 @@ setlocal shiftwidth=2 softtabstop=2 expandtab
 " IceBreak's precompiler add the seven columns in the front
 let g:rpgle_indentStart = 0
 
+" Downloaded system files should be readonly
+if expand('<afile>:p') =~ '/.cache/rpgledev/'
+  setlocal readonly
+  setlocal nomodifiable
+  setlocal noswapfile
+endif
+
 setlocal suffixesadd+=.aspx,.asmx
 setlocal includeexpr=RpgleInclude(v:fname)
 setlocal equalprg=rpglefmt\ -Idrupp
