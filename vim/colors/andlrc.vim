@@ -48,10 +48,11 @@ hi  Visual      term=reverse            cterm=reverse            ctermfg=NONE  c
 hi  VisualNOS   term=reverse,underline  cterm=reverse,underline  ctermfg=NONE  ctermbg=NONE
 
 " Diff
-hi  DiffAdd     term=NONE  cterm=NONE  ctermfg=2  ctermbg=NONE
-hi  DiffChange  term=NONE  cterm=NONE  ctermfg=3  ctermbg=NONE
-hi  DiffDelete  term=NONE  cterm=NONE  ctermfg=1  ctermbg=NONE
-hi  DiffText    term=NONE  cterm=NONE  ctermfg=4  ctermbg=NONE
+hi  DiffAdded    term=NONE    cterm=NONE  ctermfg=2  ctermbg=NONE
+hi  DiffChanged  term=NONE    cterm=NONE  ctermfg=3  ctermbg=NONE
+hi  DiffRemoved  term=NONE    cterm=NONE  ctermfg=1  ctermbg=NONE
+hi  link         gitDiff      Comment
+hi  link         diffSubname  Comment
 
 " Spell
 hi  SpellBad    term=underline  cterm=underline  ctermfg=13  ctermbg=NONE
