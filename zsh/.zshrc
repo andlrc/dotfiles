@@ -2,7 +2,7 @@ setopt NO_NOMATCH
 setopt RM_STAR_SILENT
 
 # cd
-setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHDMINUS
+setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_MINUS
 
 # Fake home directories, use cd ~dw, ...
 dw=$HOME/work/dw
@@ -13,75 +13,62 @@ echo ~dw ~sitemule ~coh ~bas > /dev/null
 
 # history
 setopt HIST_IGNORE_SPACE
-HISTSIZE=1000000000
-HISTFILESIZE=1000000000
-SAVEHIST=1000000000
 HISTFILE="$HOME/.zsh_history"
+HISTSIZE=1000000000
+SAVEHIST=1000000000
 
 # job-control
 setopt AUTO_CONTINUE # auto bg when disown
 setopt NO_NOTIFY # wait to print child to after cmd
 
 # prompt
-setopt emacs
+setopt EMACS
 WORDCHARS=@
 PROMPT="%~ $ "
 PROMPT2="> "
 
+zshaddhistory() {
+}
+
+# smart ^D
+setopt IGNORE_EOF
+smart-ctrl-d() {
+	if [ "$BUFFER" = "" ]
+	then
+		if [ "$(jobs)" != "" ]
+		then
+			BUFFER=jobs
+			zle accept-line
+		else
+			exit 0
+		fi
+	else
+		zle delete-char-or-list
+	fi
+}
+zle -N smart-ctrl-d smart-ctrl-d
+bindkey '^D' smart-ctrl-d
+
 # completion
 autoload -U compinit
 compinit
+_comp_options+=(GLOBDOTS)
 unsetopt AUTO_MENU
 
-# mappings
+# edit command-line
 autoload -U edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
 
-autoload -U up-line-or-beginning-search down-line-or-beginning-search
-zle -N up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-bindkey '^P' up-line-or-beginning-search
-bindkey '^N' down-line-or-beginning-search
-
 alias l='ls -lAh'
-alias grep="grep --color=auto --exclude-dir=.git"
-alias ed='rlwrap -S: ed'
+alias grep='grep --color=auto --exclude-dir=.git'
 
-precmd() {
-	if ! test "$silent_precmd_info"
-	then
-		# Directory Notes
-		if test -f .NOTES
-		then
-			cat .NOTES
-		fi
-	fi
-}
+stty -ixon
 
-# Silence mail info
-s() {
-	if test "$silent_precmd_info"
-	then
-		unset silent_precmd_info
-	else
-		silent_precmd_info=Y
-	fi
-}
-
+# Force a re-search for the executables in $PATH,
+# making ^I work as expected on newly installed executables.
 u() {
 	PATH="$PATH"
-}
-
-dc() {
-	if test "$#" -eq 0
-	then
-		echo "running dc with 10 as precision:"
-		echo "$ rlwrap dc -e10k /dev/stdin"
-		command rlwrap dc -e10k /dev/stdin
-	else
-		command dc "$@"
-	fi
 }
 
 d() {
@@ -91,6 +78,7 @@ d() {
 screenshot()
 {
 	import "$@" png:- | xclip -sel clip -t image/png
+	echo "Copied to clipboard"
 }
 
 # Used by AS/400 makefiles
