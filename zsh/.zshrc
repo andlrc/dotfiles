@@ -3,13 +3,13 @@ setopt RM_STAR_SILENT
 
 # cd
 setopt AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHDMINUS
-CDPATH="$HOME/work/gitlab:$HOME/work/github"
 
 # Fake home directories, use cd ~dw, ...
 dw=$HOME/work/dw
+sitemule=$HOME/work/gitlab/sitemule
 coh=$HOME/work/gitlab/coh/main/services
 bas=$HOME/work/gitlab/sitemule/bas/services
-echo ~coh ~bas ~dw > /dev/null
+echo ~dw ~sitemule ~coh ~bas > /dev/null
 
 # history
 setopt HIST_IGNORE_SPACE
