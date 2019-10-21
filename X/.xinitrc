@@ -20,4 +20,14 @@ test -n "$id" && xinput disable "$id"
 xrdb ~/.Xresources
 xmodmap ~/.xmodmap
 
+# whenever the keyboard cable is jumpy we should re-configure the keyboard...
+(
+	journalctl -f |
+	grep --line-buffered 'idVendor=17ef, idProduct=6047' |
+	while read
+	do
+		sleep 0.1 && xmodmap ~/.xmodmap
+	done
+) &
+
 exec ssh-agent i3 > /tmp/i3-log 2>&1

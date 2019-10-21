@@ -51,9 +51,6 @@ endfor
 exe 'setlocal path=' . join(path, ',')
 exe 'setlocal tags=' . join(tags, ',')
 
-au CursorMoved <buffer> call <SID>TrackRpgleVar()
-au CursorMovedI <buffer> call <SID>TrackRpgleVar()
-
 " Variables can only be defined and referenced from specific syntax ID's.
 function! s:IsValidSyntax(lnum, col) abort
   let syntax = synIDattr(synID(a:lnum, a:col, 0), 'name')
@@ -211,8 +208,19 @@ function! s:GetCursorInfo() abort
   \ }
 endfunction
 
-let b:match_ids = []
-function! s:TrackRpgleVar() abort
+function s:PrintInfo(var)
+  let var = a:var
+  if var.declpos[0] == 0
+    echo printf("Externally defined variable that is referenced %d times",
+    \    len(var.positions))
+  else
+    echo printf("%s variable that is referenced %d times",
+    \    var.global ? 'Global' : 'Local',
+    \    len(var.positions) - 1)
+  endif
+endfunction
+
+function s:ClearMatches() abort
   if !empty(b:match_ids)
     try
       for match_id in b:match_ids
@@ -223,6 +231,20 @@ function! s:TrackRpgleVar() abort
     let b:match_ids = []
   endif
 
+  if !empty(get(b:, 'current_var'))
+    unlet b:current_var
+  endif
+endfunction
+
+let b:match_ids = []
+function! s:TrackRpgleVar() abort
+  " Same identifier, no need to do anything
+  if !empty(get(b:, 'current_var')) && b:current_var.ident == expand('<cword>')
+    call s:PrintInfo(b:current_var)
+    return
+  endif
+
+  call s:ClearMatches()
   let var = s:GetCursorInfo()
   let b:current_var = var
 
@@ -231,23 +253,13 @@ function! s:TrackRpgleVar() abort
     return
   endif
 
-  if var.declpos[0] == 0
-    echo printf("Externally defined variable that is referenced %d times",
-    \    len(var.positions))
-  else
-    echo printf("%s variable that is referenced %d times",
-    \    var.global ? 'Global' : 'Local',
-    \    len(var.positions) - 1)
-  endif
+  call s:PrintInfo(var)
 
   for [lnum, col] in var.positions
       let regex = '\%' . lnum . 'l\%' . col . 'c' . var.regex
       call add(b:match_ids, matchadd('rpgleTrackedVar', regex, -1))
   endfor
 endfunction
-
-nnoremap <buffer> gd :call <SID>GotoDecl()<cr>
-nnoremap <buffer> cv :call <SID>ChangeVar()<cr>
 
 function! s:ChangeVar() abort
   let var = s:GetCursorInfo()
@@ -299,3 +311,12 @@ function! s:GotoDecl() abort
     call feedkeys('/' . regex . "\<cr>hl")
   endif
 endfunction
+
+if expand('%:e') != 'rpgleinc'
+  au CursorMoved <buffer> call <SID>TrackRpgleVar()
+  au InsertLeave <buffer> call <SID>TrackRpgleVar()
+  au InsertEnter <buffer> call <SID>ClearMatches()
+
+  nnoremap <buffer> gd :call <SID>GotoDecl()<cr>
+  nnoremap <buffer> cv :call <SID>ChangeVar()<cr>
+endif

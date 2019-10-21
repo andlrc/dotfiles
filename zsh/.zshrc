@@ -96,13 +96,3 @@ screenshot()
 # Used by AS/400 makefiles
 export SYSTEM='work-build "$(LIBL)" ""'
 export SYSTEM_UP='work-build "$(LIBL)" "$^"'
-
-PATH="/Users/and/perl5/bin${PATH:+:${PATH}}"; export PATH;
-PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"; export PATH;
-PERL5LIB="/Users/and/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
-PERL_LOCAL_LIB_ROOT="/Users/and/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
-PERL_MB_OPT="--install_base \"/Users/and/perl5\""; export PERL_MB_OPT;
-PERL_MM_OPT="INSTALL_BASE=/Users/and/perl5"; export PERL_MM_OPT;
-
-export PATH="/usr/local/opt/ruby/bin:$PATH"
-export PATH="$PATH:/usr/local/opt/inetutils/libexec/gnubin"

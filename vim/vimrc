@@ -1,6 +1,5 @@
 " vim: fdm=marker
 " Author Andreas Louv <andreas@louv.dk>
-
 " Options {{{1
 
 filetype plugin indent on
@@ -15,6 +14,7 @@ set nrformats-=octal
 set notitle
 
 set undofile undodir^=~/.vim/undo//
+" set directory^=~/.vim/swap//
 
 set listchars+=tab:\|\ 
 
@@ -34,7 +34,7 @@ setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags,js.tags,html.tags}
                      \\ $*
 
 nnoremap gb :ls<cr>:b<space>
-nnoremap <silent> <C-l> :noh<cr>:call clearmatches()<cr><C-l>
+nnoremap <silent> <C-l> :noh<cr>:call dw#highlight#Clear()<cr><C-l>
 
 setglobal errorformat^=%-Gmake:\ ***%m
 
@@ -81,7 +81,7 @@ command! ColorColumn let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''
 command! Syntax      echo printf('<%s>  %s', expand('<cword>'), synIDattr(synID(line('.'), col('.'), 0), 'name'))
 nnoremap gs :Syntax<Cr>
 
-command! -nargs=? Highlight :call dw#highlight#String('Highlight', <q-args>)
+command! -nargs=? Highlight :call dw#highlight#Highlight('Highlight', <q-args>)
 nnoremap gh :Highlight<cr>
 
 command! -range=% TR let b:wv = winsaveview() |
