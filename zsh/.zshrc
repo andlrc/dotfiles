@@ -1,3 +1,5 @@
+stty -ixon
+
 # globbing
 setopt NO_NOMATCH
 setopt RM_STAR_SILENT
