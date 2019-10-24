@@ -17,7 +17,10 @@ syntax region  rpgleString matchgroup=Label
                          \ end=/<%/
                          \ contains=@Spell
 
-syntax cluster rpgleCommentProps     add=rpgleCommentQuoted
-highlight link rpgleCommentQuoted    Directory
-highlight link ibTplString           DiffDelete
-highlight link rpgleBracketedComment DiffDelete
+if getline('1') =~ '<%' " IceBreak
+  highlight link ibTplString           rpgleString
+  highlight link rpgleBracketedComment rpgleComment
+else
+  highlight link ibTplString           Error
+  highlight link rpgleBracketedComment Error
+endif
