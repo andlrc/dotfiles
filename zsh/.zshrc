@@ -1,7 +1,5 @@
-stty -ixon
-
 # globbing
-setopt NO_NOMATCH
+unsetopt NOMATCH
 setopt RM_STAR_SILENT
 
 # completion
@@ -18,7 +16,7 @@ SAVEHIST=1000000000
 
 # job-control
 setopt AUTO_CONTINUE # auto bg when disown
-setopt NO_NOTIFY # wait to print child to after cmd
+unsetopt NOTIFY      # wait to print child to after cmd
 
 # prompt
 setopt EMACS
@@ -34,9 +32,13 @@ dw=$HOME/work/dw
 sitemule=$HOME/work/gitlab/sitemule
 coh=$HOME/work/gitlab/coh/main/services
 bas=$HOME/work/gitlab/sitemule/bas/services
-echo ~dw ~sitemule ~coh ~bas > /dev/null
+ip2=/mnt/dksrv206/www/Portfolio/Admin/Services
+echo ~dw ~sitemule ~coh ~bas ~ip2 > /dev/null
 
-# smart ^D
+# Smart ^D does 3 things:
+# Deletes the character to the right of the cursor,
+# list background jobs if any,
+# or exits the shell.
 setopt IGNORE_EOF
 smart-ctrl-d() {
 	if [ "$BUFFER" = "" ]
@@ -49,15 +51,14 @@ smart-ctrl-d() {
 			exit 0
 		fi
 	else
-		zle .delete-char-or-list
+		zle .delete-char
 	fi
 }
 zle -N smart-ctrl-d
 bindkey '^D' smart-ctrl-d
 
 # edit command-line
-edit-command-line()
-{
+edit-command-line() {
 	tmp=$(mktemp)
 	echo "$BUFFER" > "$tmp"
 	${EDITOR:-${VISUAL:-vi}} "$tmp" < /dev/tty
@@ -67,9 +68,6 @@ edit-command-line()
 }
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
-
-alias l='ls -lAh'
-alias grep='grep --color=auto --exclude-dir=.git'
 
 # Force a re-search for the executables in $PATH,
 # making ^I work as expected on newly installed executables.
@@ -90,3 +88,9 @@ screenshot()
 # Used by AS/400 makefiles
 export SYSTEM='work-build "$(LIBL)" ""'
 export SYSTEM_UP='work-build "$(LIBL)" "$^"'
+
+export AS400_SERVER=dksrv206
+export AS400_USER=and
+
+alias l='ls -lAh'
+alias grep='grep --color=auto --exclude-dir=.git'
