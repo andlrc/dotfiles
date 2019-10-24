@@ -16,7 +16,6 @@ endfunction
 function dw#highlight#Clear() abort
   try
     for [_, match_id] in items(b:dw_highlight_match_ids)
-      echom '<'.match_id .'>'
       call matchdelete(match_id)
     endfor
   catch /./

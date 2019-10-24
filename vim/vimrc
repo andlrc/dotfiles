@@ -1,23 +1,21 @@
-" vim: fdm=marker
-" Author Andreas Louv <andreas@louv.dk>
-" Options {{{1
-
 filetype plugin indent on
 syntax enable
-set synmaxcol=200
 
 set history=10000
-set hidden
-set visualbell belloff=wildmode
+set synmaxcol=200
+
 set backspace=indent,eol,start
-set nrformats-=octal
+set nomodeline modelines=0
 set notitle
+set nrformats-=octal
+set visualbell belloff=wildmode
 
 set undofile undodir^=~/.vim/undo//
 " set directory^=~/.vim/swap//
 
 set listchars+=tab:\|\ 
 
+" Colors
 augroup ColorChg
   au!
   au ColorScheme andlrc hi rpgleTrackedVar term=bold cterm=bold ctermfg=9 ctermbg=NONE
@@ -25,10 +23,9 @@ augroup ColorChg
 augroup END
 colorscheme andlrc
 
-" Searching, Navigating and Compiling Files {{{1
-
+" Searching, Navigating and Compiling Files
+set hidden
 setglobal ignorecase smartcase hlsearch incsearch
-setglobal path+=**
 setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags,js.tags,html.tags}
                      \\ --exclude-dir={node_modules,.git}
                      \\ $*
@@ -36,18 +33,16 @@ setglobal grepprg=grep\ -nH\ --exclude={\\*.o,tags,js.tags,html.tags}
 nnoremap gb :ls<cr>:b<space>
 nnoremap <silent> <C-l> :noh<cr>:call dw#highlight#Clear()<cr><C-l>
 
+" ignore: *** [file.mk:1: file.o] Error 1
 setglobal errorformat^=%-Gmake:\ ***%m
 
-" Enhanced % {{{2
-
+" Enhanced %
 packadd! matchit
 
-" Spelling {{{1
-
+" Spelling
 set spellfile=~/.vim/spell.utf-8.add
 
-" Completion {{{1
-
+" Completion
 set wildmenu
 set wildmode=list:longest
 set wildignorecase
@@ -59,8 +54,6 @@ set complete-=t			" Don't scan tag files
 " Dummy files to keep "make(1)" happy
 set wildignore=*.srvpgm,*.pgm,*.mod,*.bnddir
 
-" Wrapping {{{1
-
 " Why can't I set "nowrap" nor "textwidth" with "setglobal",
 " "/usr/share/vim/vimfiles/archlinux.vim" doesn't set them.
 set nowrap
@@ -68,19 +61,17 @@ set textwidth=80
 set formatoptions+=jo
 set formatoptions-=t
 
-" Abbreviations {{{1
-
 inoreabbrev <al@ <andreas@louv.dk
 inoreabbrev al@ andreas@louv.dk
 inoreabbrev <and@ <and@sitemule.com
 inoreabbrev and@ and@sitemule.com
 
-" Commands {{{1
-
+" Commands
 command! ColorColumn let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''
 command! Syntax      echo printf('<%s>  %s', expand('<cword>'), synIDattr(synID(line('.'), col('.'), 0), 'name'))
 nnoremap gs :Syntax<Cr>
 
+" Highlight word under cursor or arg
 command! -nargs=? Highlight :call dw#highlight#Highlight('Highlight', <q-args>)
 nnoremap gh :Highlight<cr>
 
@@ -88,10 +79,7 @@ command! -range=% TR let b:wv = winsaveview() |
                    \ keeppattern <line1>,<line2>s/\\\@<!\s\+$// |
                    \ call winrestview(b:wv)
 
-command! -bang Bump :call dw#version#Bump(<bang>0)
-
-" Folding {{{1
-
+" Folding
 setglobal foldopen-=block
 " Automatic set foldmethod to manual when entering insert mode, this is done
 " to prevent vim from unfolding automatic folds, when the code changes.
@@ -110,8 +98,7 @@ function! s:LazyFolds(enter) abort
   endif
 endfunction
 
-" FileType Detect {{{1
-
+" FileType Detect
 augroup FT_Detect
   autocmd!
   autocmd BufNewFile,BufRead *.{xjson,xpd,ns,dmd,lib} setlocal filetype=json
@@ -120,6 +107,5 @@ augroup FT_Detect
   autocmd BufNewFile,BufRead *.ts setlocal filetype=javascript.typescript
 augroup END
 
-" UndotreeToggle {{{1
-
+" UndotreeToggle
 let g:undotree_SetFocusWhenToggle = 1
