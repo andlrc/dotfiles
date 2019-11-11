@@ -18,7 +18,10 @@ set listchars+=tab:\|\
 " Colors
 augroup ColorChg
   au!
-  au ColorScheme andlrc hi Highlight ctermfg=15 ctermbg=4
+  au ColorScheme andlrc hi User1 ctermfg=15 ctermbg=4
+  au ColorScheme andlrc hi User2 ctermfg=15 ctermbg=5
+  au ColorScheme andlrc hi User3 ctermfg=15 ctermbg=6
+  au ColorScheme andlrc hi User4 ctermfg=15 ctermbg=3
 augroup END
 colorscheme andlrc
 
@@ -69,9 +72,12 @@ command! ColorColumn let &l:colorcolumn = &l:colorcolumn == '' ? '+0' : ''
 command! Syntax      echo printf('<%s>  %s', expand('<cword>'), synIDattr(synID(line('.'), col('.'), 0), 'name'))
 nnoremap gs :Syntax<Cr>
 
-" Highlight word under cursor or arg
-command! -nargs=? Highlight :call dw#highlight#Highlight('Highlight', <q-args>)
-nnoremap gh :Highlight<cr>
+" Highlight word under cursor
+command! -count Highlight
+                \ :call dw#highlight#Highlight('User' . max([1, expand('<count>') - line('.') + 1]),
+                \ expand('<cword>'))
+" {1..4}gh
+nnoremap <silent> gh :Highlight<cr>
 
 command! -range=% TR let b:wv = winsaveview() |
                    \ keeppattern <line1>,<line2>s/\\\@<!\s\+$// |

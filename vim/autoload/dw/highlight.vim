@@ -1,16 +1,12 @@
 let b:dw_highlight_match_ids = {}
-function dw#highlight#Highlight(group, ...) abort
+function dw#highlight#Highlight(group, word) abort
   if has_key(b:dw_highlight_match_ids, a:group)
     try
       call matchdelete(b:dw_highlight_match_ids[a:group])
     catch /./
     endtry
   endif
-  if a:1 != ''
-    let b:dw_highlight_match_ids[a:group] = matchadd(a:group, a:1)
-  else
-    let b:dw_highlight_match_ids[a:group] = matchadd(a:group, expand('<cword>'))
-  endif
+  let b:dw_highlight_match_ids[a:group] = matchadd(a:group, a:word)
 endfunction
 
 function dw#highlight#Clear() abort

@@ -33,6 +33,8 @@ do
 
 	real_file=$(echo "${undo_file##*/}" | sed 's~%~/~g' | sed 's~'"$PWD"/'~~')
 
+	[ -e "$real_file" ] || continue
+
 	# Expand "$rm_opts"
 	if [ "$z_interactive" -gt 0 ]
 	then
