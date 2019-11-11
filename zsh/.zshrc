@@ -1,4 +1,5 @@
 # globbing
+setopt EXTENDED_GLOB
 unsetopt NOMATCH
 setopt RM_STAR_SILENT
 
@@ -10,6 +11,7 @@ unsetopt AUTO_MENU
 
 # history
 setopt HIST_IGNORE_SPACE
+setopt HIST_IGNORE_ALL_DUPS
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=1000000000
 SAVEHIST=1000000000

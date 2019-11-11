@@ -57,8 +57,7 @@ set wildignore=*.srvpgm,*.pgm,*.mod,*.bnddir
 " "/usr/share/vim/vimfiles/archlinux.vim" doesn't set them.
 set nowrap
 set textwidth=80
-set formatoptions+=jo
-set formatoptions-=t
+set formatoptions=cqj
 
 inoreabbrev <al@ <andreas@louv.dk
 inoreabbrev al@ andreas@louv.dk
