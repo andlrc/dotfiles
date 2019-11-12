@@ -1,0 +1,13 @@
+#!/bin/sh
+
+format=$(cat <<EOF
+%(HEAD) %(refname:short) %(objectname:short) %(committerdate:relative) %(authorname)
+<%(upstream:track)>
+EOF
+)
+
+git for-each-ref			\
+	--sort=-committerdate		\
+	--count=0			\
+	--format="$format"		\
+	'refs/heads/'
