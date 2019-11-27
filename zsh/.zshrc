@@ -34,8 +34,9 @@ dw=$HOME/work/dw
 sitemule=$HOME/work/gitlab/sitemule
 coh=$HOME/work/gitlab/coh/main/services
 bas=$HOME/work/gitlab/sitemule/bas/services
+rpglep=$HOME/work/gitlab/and/rpglep
 ip2=/mnt/dksrv206/www/Portfolio/Admin/Services
-echo ~dw ~sitemule ~coh ~bas ~ip2 > /dev/null
+echo ~dw ~sitemule ~coh ~bas ~rpglep ~ip2 > /dev/null
 
 # Smart ^D does 3 things:
 # Deletes the character to the right of the cursor,

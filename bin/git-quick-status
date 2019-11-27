@@ -1,8 +1,8 @@
 #!/bin/sh
 
 format=$(cat <<EOF
-%(HEAD) %(refname:short) %(objectname:short) %(committerdate:relative) %(authorname)
-<%(upstream:track)>
+%(HEAD) %(refname:short) %(objectname:short) %(committerdate:relative) %(authorname) %(upstream:track)
+    %(contents:subject)
 EOF
 )
 

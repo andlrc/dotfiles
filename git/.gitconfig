@@ -12,3 +12,10 @@
 	fetchJobs = 8
 [url "ssh://192.168.5.206/git/"]
 	insteadOf = work:
+[color "diff"]
+	commit = normal
+	frag = normal normal bold
+[color "decorate"]
+	HEAD = normal
+	branch = normal
+	tag = normal
