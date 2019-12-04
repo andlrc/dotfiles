@@ -110,6 +110,7 @@ augroup FT_Detect
   autocmd BufNewFile,BufRead *.qdmd setlocal filetype=qdmd
   autocmd BufNewFile,BufRead *.ts setlocal filetype=javascript.typescript
   autocmd BufNewFile,BufRead *.ast setlocal filetype=ast
+  autocmd BufNewFile,BufRead *.jinja setlocal filetype=c
 augroup END
 
 " UndotreeToggle
